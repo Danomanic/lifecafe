@@ -9,6 +9,7 @@ export default function Drinks() {
       <Navbar />
 
       <main className="flex-grow p-4">
+        <p className="font-bold mb-4">Coffee</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <ItemButton name="Flat White" link="/item/flat-white"></ItemButton>
           <ItemButton name="Latte" link="/item/latte"></ItemButton>
