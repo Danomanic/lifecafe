@@ -1,21 +1,26 @@
 "use client"
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Modal() {
   const [openModal, setModal] = useState(false);
+  const [tableNumber, setTableNumber] = useState(null);
   const handleModal = () => {
     // Store table number in local storage on model close based on button clicked
     if (openModal) {
       const tableNumber = event.target.innerText;
       localStorage.setItem('tableNumber', tableNumber);
+      setTableNumber(tableNumber);
     }
 
-    setModal(!openModal)
+    setModal(!openModal);
   }
 
-  // Get table number from local storage
-  const tableNumber = localStorage.getItem('tableNumber');
+  useEffect(() => {
+    // Check if table number is already set in local storage
+    const tableNumber = localStorage.getItem('tableNumber');
+    setTableNumber(tableNumber);
+  }, []);
 
   return (
     <div>
