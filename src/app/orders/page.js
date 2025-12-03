@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Navbar from "@/app/navbar";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -169,7 +169,7 @@ export default function OrdersPage() {
           <div className="bg-white rounded-lg shadow-md p-6 text-center">
             <div className="text-3xl mb-2">📋</div>
             <h2 className="text-lg font-semibold mb-1">No Orders Yet</h2>
-            <p className="text-gray-600 mb-3 text-sm">You haven't placed any orders for this table.</p>
+            <p className="text-gray-600 mb-3 text-sm">You haven&apos;t placed any orders for this table.</p>
             <button
               onClick={() => router.push('/')}
               className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-bold"
