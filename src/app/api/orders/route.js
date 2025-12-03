@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDbClient, initDatabase } from '@/lib/db';
+import { getDbClient, initDatabase, getOrderItemsAggregationSQL } from '@/lib/db';
 
 // Initialize database on first request
 let dbInitialized = false;
@@ -31,11 +31,10 @@ export async function POST(request) {
 
     // Create order
     const orderResult = await db.execute({
-      sql: 'INSERT INTO orders (table_number, status) VALUES (?, ?)',
+      sql: 'INSERT INTO orders (table_number, status) VALUES (?, ?) RETURNING id',
       args: [tableNumber, 'pending'],
     });
-
-    const orderId = orderResult.lastInsertRowid;
+    const orderId = orderResult.rows[0].id;
 
     // Insert order items
     for (const item of items) {
@@ -56,27 +55,18 @@ export async function POST(request) {
     }
 
     // Fetch the complete order with items
+    const itemsAggregation = getOrderItemsAggregationSQL();
     const order = await db.execute({
       sql: `SELECT
               o.id,
               o.table_number,
               o.status,
               o.created_at,
-              json_group_array(
-                json_object(
-                  'id', oi.id,
-                  'name', oi.item_name,
-                  'slug', oi.item_slug,
-                  'options', oi.options_json,
-                  'price', oi.price,
-                  'quantity', oi.quantity,
-                  'notes', oi.notes
-                )
-              ) as items
+              ${itemsAggregation} as items
             FROM orders o
             LEFT JOIN order_items oi ON o.id = oi.order_id
             WHERE o.id = ?
-            GROUP BY o.id`,
+            GROUP BY o.id, o.table_number, o.status, o.created_at`,
       args: [orderId],
     });
 
@@ -109,6 +99,7 @@ export async function GET(request) {
     const status = searchParams.get('status');
 
     const db = getDbClient();
+    const itemsAggregation = getOrderItemsAggregationSQL();
 
     let sql = `SELECT
                 o.id,
@@ -116,17 +107,7 @@ export async function GET(request) {
                 o.status,
                 o.created_at,
                 o.updated_at,
-                json_group_array(
-                  json_object(
-                    'id', oi.id,
-                    'name', oi.item_name,
-                    'slug', oi.item_slug,
-                    'options', oi.options_json,
-                    'price', oi.price,
-                    'quantity', oi.quantity,
-                    'notes', oi.notes
-                  )
-                ) as items
+                ${itemsAggregation} as items
               FROM orders o
               LEFT JOIN order_items oi ON o.id = oi.order_id`;
 
@@ -147,7 +128,7 @@ export async function GET(request) {
       sql += ' WHERE ' + conditions.join(' AND ');
     }
 
-    sql += ' GROUP BY o.id ORDER BY o.created_at DESC';
+    sql += ' GROUP BY o.id, o.table_number, o.status, o.created_at, o.updated_at ORDER BY o.created_at DESC';
 
     const result = await db.execute({ sql, args });
 

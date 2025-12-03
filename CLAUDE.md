@@ -34,7 +34,7 @@ The dev server runs on http://localhost:3000
 - **React 19.1.0** (mostly server components)
 - **Tailwind CSS 4** for styling
 - **Turbopack** for fast builds
-- **Turso (libSQL)** - Embedded SQLite database for order persistence
+- **PostgreSQL** database via `pg` package (local and production)
 
 ### State Management
 The app uses minimal state management:
@@ -44,45 +44,60 @@ The app uses minimal state management:
 
 ### Database
 
-**Turso/libSQL** - Embedded SQLite database
-- Local development: Uses `file:local.db` (SQLite file in project root)
-- Production: Can connect to Turso cloud database via environment variables
-- Database client: `@libsql/client` package
-- Configuration: `src/lib/db.js`
+The application uses **PostgreSQL** for both local development and production.
+
+**Database Configuration:**
+- Location: `src/lib/db.js`
+- Client: `pg` (node-postgres)
+- Connection pooling enabled
 
 **Database Schema:**
 ```sql
 -- Orders table
 orders (
-  id INTEGER PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   table_number INTEGER NOT NULL,
   status TEXT DEFAULT 'pending',
-  created_at TEXT,
-  updated_at TEXT
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 
 -- Order items table
 order_items (
-  id INTEGER PRIMARY KEY,
-  order_id INTEGER REFERENCES orders(id),
+  id SERIAL PRIMARY KEY,
+  order_id INTEGER NOT NULL,
   item_name TEXT NOT NULL,
   item_slug TEXT NOT NULL,
-  cup_size TEXT,
-  milk_type TEXT,
+  options_json TEXT,
   quantity INTEGER DEFAULT 1,
+  price NUMERIC(10, 2),
   notes TEXT,
-  created_at TEXT
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE
 )
 ```
 
 **Environment Variables:**
-- `TURSO_DATABASE_URL`: Database URL (optional for local dev)
-- `TURSO_AUTH_TOKEN`: Authentication token (optional for local dev)
-- If not set, uses local SQLite file at `file:local.db`
+
+*Local Development:*
+- `DATABASE_URL`: PostgreSQL connection string
+  - Default: `postgresql://lifecafe:lifecafe@localhost:5432/lifecafe`
+  - Format: `postgresql://username:password@host:port/database`
+
+*Production:*
+- `DATABASE_URL`: PostgreSQL connection string (required)
+  - Format: `postgresql://user:password@host:port/database?sslmode=require`
+  - Provided by DigitalOcean Managed Database
+
+**Local Setup:**
+See `POSTGRES_SETUP.md` for detailed instructions on installing and configuring PostgreSQL locally.
 
 **API Routes:**
 - `POST /api/orders` - Create new order
 - `GET /api/orders` - List orders (supports `?tableNumber=X` and `?status=pending` filters)
+- `GET /api/orders/[id]` - Get single order
+- `PATCH /api/orders/[id]` - Update order status
+- `DELETE /api/orders/[id]` - Delete order
 
 ### Key Components
 
@@ -145,7 +160,13 @@ The table number is stored in browser localStorage and persists across page refr
 
 ### Database Initialization
 
-On first API request, the database is automatically initialized with required tables. You can also manually initialize the database:
+**Prerequisites:**
+1. PostgreSQL must be installed and running locally
+2. Database and user must be created (see `POSTGRES_SETUP.md`)
+3. `DATABASE_URL` environment variable must be set in `.env.local`
+
+**Initialize Tables:**
+On first API request, the database is automatically initialized with required tables. You can also manually initialize:
 
 ```bash
 npm run db:init
@@ -171,17 +192,127 @@ Item detail pages use Next.js dynamic routing with `[slug]` parameter and are cl
 - Display validation errors and loading states
 - Redirect to drinks page on successful order placement
 
+## Getting Started
+
+### Prerequisites
+
+1. **Node.js** (v18 or later)
+2. **PostgreSQL** (v14 or later)
+
+### Local Development Setup
+
+1. **Install PostgreSQL**
+   - See `POSTGRES_SETUP.md` for detailed installation instructions for your OS
+
+2. **Create Database**
+   ```bash
+   psql postgres
+   ```
+   ```sql
+   CREATE DATABASE lifecafe;
+   CREATE USER lifecafe WITH PASSWORD 'lifecafe';
+   GRANT ALL PRIVILEGES ON DATABASE lifecafe TO lifecafe;
+   \c lifecafe
+   GRANT ALL ON SCHEMA public TO lifecafe;
+   \q
+   ```
+
+3. **Configure Environment**
+   ```bash
+   cp .env.local.example .env.local
+   ```
+
+4. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+
+5. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
+
+6. **Initialize Database** (automatic on first API request)
+   - Or manually: `npm run db:init`
+
 ## Deployment on DigitalOcean App Platform
 
-**Local Development:**
-- Database uses local SQLite file (`local.db`)
-- No environment variables required
+### Production Setup with DigitalOcean Managed Database
 
-**Production Setup:**
-1. Create a Turso database: `turso db create lifecafe-prod`
-2. Get database URL: `turso db show lifecafe-prod --url`
-3. Generate auth token: `turso db tokens create lifecafe-prod`
-4. Set environment variables in DigitalOcean App Platform:
-   - `TURSO_DATABASE_URL`: Your Turso database URL
-   - `TURSO_AUTH_TOKEN`: Your Turso auth token
-5. Deploy app - database will auto-initialize on first API request
+**Step 1: Create PostgreSQL Database**
+1. Go to DigitalOcean Dashboard → Databases
+2. Click "Create Database"
+3. Select:
+   - Database engine: **PostgreSQL** (latest version)
+   - Datacenter region: Choose closest to your app
+   - Database configuration: Select size based on needs (Basic plan is fine for small apps)
+   - Database name: `lifecafe-db` (or any name you prefer)
+4. Click "Create Database Cluster"
+
+**Step 2: Get Database Connection String**
+1. Once database is created, go to "Connection Details"
+2. Connection parameters format: Select **Connection String**
+3. Copy the connection string (format: `postgresql://username:password@host:port/database?sslmode=require`)
+4. Note: You can also get individual connection parameters:
+   - Host
+   - Port
+   - Username
+   - Password
+   - Database name
+
+**Step 3: Configure Trusted Sources (Security)**
+1. In database settings, go to "Trusted Sources"
+2. Add your DigitalOcean App Platform app
+   - Option A: Select your app from the dropdown if it's already created
+   - Option B: Temporarily allow all IPs during setup, then restrict later
+
+**Step 4: Configure App Platform Environment Variables**
+1. Go to your App Platform app settings
+2. Navigate to "Settings" → "App-Level Environment Variables"
+3. Add the following environment variable:
+   - Key: `DATABASE_URL`
+   - Value: Your PostgreSQL connection string (from Step 2)
+   - Scope: Check both "build" and "runtime"
+   - Encrypt: ✓ (recommended for security)
+4. Save changes
+
+**Step 5: Deploy Application**
+1. Deploy or redeploy your app
+2. The app will automatically:
+   - Detect PostgreSQL via `DATABASE_URL`
+   - Initialize database tables on first API request
+   - Use PostgreSQL-compatible SQL queries
+
+**Step 6: Verify Deployment**
+1. Open your deployed app URL
+2. Select a table and place a test order
+3. Check DigitalOcean database metrics to verify connections
+4. View logs in App Platform to confirm successful database initialization
+
+### Environment Variable Summary
+
+**Local Development**
+- `DATABASE_URL`: `postgresql://lifecafe:lifecafe@localhost:5432/lifecafe`
+  - Create `.env.local` file with this variable
+  - See `POSTGRES_SETUP.md` for setup instructions
+
+**Production (DigitalOcean)**
+- `DATABASE_URL`: PostgreSQL connection string (provided by DigitalOcean)
+  - Automatically includes `?sslmode=require` parameter
+
+### Troubleshooting
+
+**Connection Issues:**
+- Verify database is running and accessible
+- Check trusted sources/firewall settings
+- Confirm connection string is correct
+- Check app logs for specific error messages
+
+**SSL Certificate Issues:**
+- Add `?sslmode=require` to connection string
+- Or set SSL verification in code (already configured)
+
+**Database Not Initializing:**
+- Check application logs for errors
+- Manually run `npm run db:init` locally to test
+- Verify app has network access to database
