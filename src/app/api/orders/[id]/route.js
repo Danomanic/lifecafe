@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDbClient, initDatabase, getOrderItemsAggregationSQL, getCurrentTimestampSQL } from '@/lib/db';
+import { getCollections, initDatabase, objectIdToString, stringToObjectId } from '@/lib/db';
 
 // Initialize database on first request
 let dbInitialized = false;
@@ -29,17 +29,20 @@ export async function PATCH(request, { params }) {
       );
     }
 
-    const db = getDbClient();
-    const currentTimestamp = getCurrentTimestampSQL();
-    const itemsAggregation = getOrderItemsAggregationSQL();
+    const { orders, orderItems } = await getCollections();
+    const objectId = stringToObjectId(id);
+
+    if (!objectId) {
+      return NextResponse.json(
+        { error: 'Invalid order ID' },
+        { status: 400 }
+      );
+    }
 
     // Check if order exists
-    const existingOrder = await db.execute({
-      sql: 'SELECT id FROM orders WHERE id = ?',
-      args: [id],
-    });
+    const existingOrder = await orders.findOne({ _id: objectId });
 
-    if (existingOrder.rows.length === 0) {
+    if (!existingOrder) {
       return NextResponse.json(
         { error: 'Order not found' },
         { status: 404 }
@@ -47,37 +50,30 @@ export async function PATCH(request, { params }) {
     }
 
     // Update order status
-    await db.execute({
-      sql: `UPDATE orders
-            SET status = ?, updated_at = ${currentTimestamp}
-            WHERE id = ?`,
-      args: [status, id],
-    });
+    await orders.updateOne(
+      { _id: objectId },
+      { $set: { status: status, updatedAt: new Date() } }
+    );
 
     // Fetch updated order with items
-    const order = await db.execute({
-      sql: `SELECT
-              o.id,
-              o.table_number,
-              o.status,
-              o.created_at,
-              o.updated_at,
-              ${itemsAggregation} as items
-            FROM orders o
-            LEFT JOIN order_items oi ON o.id = oi.order_id
-            WHERE o.id = ?
-            GROUP BY o.id, o.table_number, o.status, o.created_at, o.updated_at`,
-      args: [id],
-    });
+    const updatedOrder = await orders.findOne({ _id: objectId });
+    const items = await orderItems.find({ orderId: objectId }).toArray();
 
-    const orderData = order.rows[0];
     const result = {
-      id: orderData.id,
-      tableNumber: orderData.table_number,
-      status: orderData.status,
-      createdAt: orderData.created_at,
-      updatedAt: orderData.updated_at,
-      items: JSON.parse(orderData.items),
+      id: objectIdToString(updatedOrder._id),
+      tableNumber: updatedOrder.tableNumber,
+      status: updatedOrder.status,
+      createdAt: updatedOrder.createdAt,
+      updatedAt: updatedOrder.updatedAt,
+      items: items.map(item => ({
+        id: objectIdToString(item._id),
+        name: item.itemName,
+        slug: item.itemSlug,
+        options: item.options,
+        price: item.price,
+        quantity: item.quantity,
+        notes: item.notes,
+      })),
     };
 
     return NextResponse.json(result);
@@ -96,39 +92,42 @@ export async function GET(request, { params }) {
     await ensureDbInitialized();
 
     const { id } = await params;
-    const db = getDbClient();
-    const itemsAggregation = getOrderItemsAggregationSQL();
+    const { orders, orderItems } = await getCollections();
+    const objectId = stringToObjectId(id);
 
-    const order = await db.execute({
-      sql: `SELECT
-              o.id,
-              o.table_number,
-              o.status,
-              o.created_at,
-              o.updated_at,
-              ${itemsAggregation} as items
-            FROM orders o
-            LEFT JOIN order_items oi ON o.id = oi.order_id
-            WHERE o.id = ?
-            GROUP BY o.id, o.table_number, o.status, o.created_at, o.updated_at`,
-      args: [id],
-    });
+    if (!objectId) {
+      return NextResponse.json(
+        { error: 'Invalid order ID' },
+        { status: 400 }
+      );
+    }
 
-    if (order.rows.length === 0) {
+    const order = await orders.findOne({ _id: objectId });
+
+    if (!order) {
       return NextResponse.json(
         { error: 'Order not found' },
         { status: 404 }
       );
     }
 
-    const orderData = order.rows[0];
+    const items = await orderItems.find({ orderId: objectId }).toArray();
+
     const result = {
-      id: orderData.id,
-      tableNumber: orderData.table_number,
-      status: orderData.status,
-      createdAt: orderData.created_at,
-      updatedAt: orderData.updated_at,
-      items: JSON.parse(orderData.items),
+      id: objectIdToString(order._id),
+      tableNumber: order.tableNumber,
+      status: order.status,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+      items: items.map(item => ({
+        id: objectIdToString(item._id),
+        name: item.itemName,
+        slug: item.itemSlug,
+        options: item.options,
+        price: item.price,
+        quantity: item.quantity,
+        notes: item.notes,
+      })),
     };
 
     return NextResponse.json(result);
@@ -147,32 +146,31 @@ export async function DELETE(request, { params }) {
     await ensureDbInitialized();
 
     const { id } = await params;
-    const db = getDbClient();
+    const { orders, orderItems } = await getCollections();
+    const objectId = stringToObjectId(id);
+
+    if (!objectId) {
+      return NextResponse.json(
+        { error: 'Invalid order ID' },
+        { status: 400 }
+      );
+    }
 
     // Check if order exists
-    const existingOrder = await db.execute({
-      sql: 'SELECT id FROM orders WHERE id = ?',
-      args: [id],
-    });
+    const existingOrder = await orders.findOne({ _id: objectId });
 
-    if (existingOrder.rows.length === 0) {
+    if (!existingOrder) {
       return NextResponse.json(
         { error: 'Order not found' },
         { status: 404 }
       );
     }
 
-    // Delete order items first (due to foreign key constraint)
-    await db.execute({
-      sql: 'DELETE FROM order_items WHERE order_id = ?',
-      args: [id],
-    });
+    // Delete order items first
+    await orderItems.deleteMany({ orderId: objectId });
 
     // Delete order
-    await db.execute({
-      sql: 'DELETE FROM orders WHERE id = ?',
-      args: [id],
-    });
+    await orders.deleteOne({ _id: objectId });
 
     return NextResponse.json({ success: true, message: 'Order deleted successfully' });
   } catch (error) {

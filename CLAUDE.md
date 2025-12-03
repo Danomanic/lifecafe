@@ -34,7 +34,7 @@ The dev server runs on http://localhost:3000
 - **React 19.1.0** (mostly server components)
 - **Tailwind CSS 4** for styling
 - **Turbopack** for fast builds
-- **PostgreSQL** database via `pg` package (local and production)
+- **MongoDB** database via `mongodb` package (local and production)
 
 ### State Management
 The app uses minimal state management:
@@ -44,57 +44,61 @@ The app uses minimal state management:
 
 ### Database
 
-The application uses **PostgreSQL** for both local development and production.
+The application uses **MongoDB** for both local development and production.
 
 **Database Configuration:**
 - Location: `src/lib/db.js`
-- Client: `pg` (node-postgres)
-- Connection pooling enabled
-- SSL: Automatically enabled for non-localhost connections
-  - Supports CA certificate file (`db-ca-certificate.crt` in project root)
-  - Falls back to environment variable `DATABASE_CA_CERT` if file not found
-  - Accepts self-signed certificates from managed database providers
+- Client: `mongodb` (official MongoDB driver)
+- Connection pooling enabled via singleton pattern
+- Supports both local MongoDB and cloud services (MongoDB Atlas, etc.)
 
 **Database Schema:**
-```sql
--- Orders table
-orders (
-  id SERIAL PRIMARY KEY,
-  table_number INTEGER NOT NULL,
-  status TEXT DEFAULT 'pending',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
 
--- Order items table
-order_items (
-  id SERIAL PRIMARY KEY,
-  order_id INTEGER NOT NULL,
-  item_name TEXT NOT NULL,
-  item_slug TEXT NOT NULL,
-  options_json TEXT,
-  quantity INTEGER DEFAULT 1,
-  price NUMERIC(10, 2),
-  notes TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE
-)
+*Collections:*
+- `orders`: Main order documents
+- `order_items`: Individual items within orders
+
+*Orders Collection:*
+```javascript
+{
+  _id: ObjectId,
+  tableNumber: Number,
+  status: String, // 'pending', 'completed', 'cancelled'
+  createdAt: Date,
+  updatedAt: Date
+}
 ```
+
+*Order Items Collection:*
+```javascript
+{
+  _id: ObjectId,
+  orderId: ObjectId, // Reference to orders._id
+  itemName: String,
+  itemSlug: String,
+  options: Object, // Flexible object for any item options
+  quantity: Number,
+  price: Number,
+  notes: String,
+  createdAt: Date
+}
+```
+
+**Indexes:**
+- `orders`: `tableNumber`, `status`, `createdAt` (descending)
+- `order_items`: `orderId`
 
 **Environment Variables:**
 
 *Local Development:*
-- `DATABASE_URL`: PostgreSQL connection string
-  - Default: `postgresql://lifecafe:lifecafe@localhost:5432/lifecafe`
-  - Format: `postgresql://username:password@host:port/database`
+- `MONGODB_URI`: MongoDB connection string
+  - Default: `mongodb://localhost:27017/lifecafe`
+  - Format: `mongodb://[username:password@]host:port/database`
 
-*Production:*
-- `DATABASE_URL`: PostgreSQL connection string (required)
-  - Format: `postgresql://user:password@host:port/database?sslmode=require`
-  - Provided by DigitalOcean Managed Database
-
-**Local Setup:**
-See `POSTGRES_SETUP.md` for detailed instructions on installing and configuring PostgreSQL locally.
+*Production (MongoDB Atlas or other cloud):*
+- `MONGODB_URI`: MongoDB connection string (required)
+  - Format: `mongodb+srv://username:password@cluster.mongodb.net/lifecafe`
+  - Connection string provided by your MongoDB cloud service
 
 **API Routes:**
 - `POST /api/orders` - Create new order
@@ -165,12 +169,12 @@ The table number is stored in browser localStorage and persists across page refr
 ### Database Initialization
 
 **Prerequisites:**
-1. PostgreSQL must be installed and running locally
-2. Database and user must be created (see `POSTGRES_SETUP.md`)
-3. `DATABASE_URL` environment variable must be set in `.env.local`
+1. MongoDB must be installed and running locally (or use MongoDB Atlas for cloud)
+2. No manual database/collection creation needed - MongoDB creates them automatically
+3. `MONGODB_URI` environment variable must be set in `.env.local`
 
-**Initialize Tables:**
-On first API request, the database is automatically initialized with required tables. You can also manually initialize:
+**Initialize Database:**
+On first API request, the database is automatically initialized with indexes. You can also manually initialize:
 
 ```bash
 npm run db:init
@@ -201,29 +205,59 @@ Item detail pages use Next.js dynamic routing with `[slug]` parameter and are cl
 ### Prerequisites
 
 1. **Node.js** (v18 or later)
-2. **PostgreSQL** (v14 or later)
+2. **MongoDB** (v5.0 or later) OR **MongoDB Atlas** (cloud)
 
 ### Local Development Setup
 
-1. **Install PostgreSQL**
-   - See `POSTGRES_SETUP.md` for detailed installation instructions for your OS
+1. **Install MongoDB (Local Option)**
 
-2. **Create Database**
+   **macOS (using Homebrew):**
    ```bash
-   psql postgres
+   brew tap mongodb/brew
+   brew install mongodb-community@7.0
+   brew services start mongodb-community@7.0
    ```
-   ```sql
-   CREATE DATABASE lifecafe;
-   CREATE USER lifecafe WITH PASSWORD 'lifecafe';
-   GRANT ALL PRIVILEGES ON DATABASE lifecafe TO lifecafe;
-   \c lifecafe
-   GRANT ALL ON SCHEMA public TO lifecafe;
-   \q
+
+   **Ubuntu/Debian:**
+   ```bash
+   # Import MongoDB public key
+   wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
+
+   # Add MongoDB repository
+   echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+
+   # Install MongoDB
+   sudo apt-get update
+   sudo apt-get install -y mongodb-org
+
+   # Start MongoDB
+   sudo systemctl start mongod
+   sudo systemctl enable mongod
    ```
+
+   **Windows:**
+   - Download MongoDB Community Server from https://www.mongodb.com/try/download/community
+   - Run the installer and follow the setup wizard
+   - MongoDB will start automatically as a Windows service
+
+2. **OR Use MongoDB Atlas (Cloud Option)**
+   - Sign up at https://www.mongodb.com/cloud/atlas
+   - Create a free cluster
+   - Get your connection string from "Connect" → "Connect your application"
+   - Update `.env.local` with your Atlas connection string
 
 3. **Configure Environment**
    ```bash
    cp .env.local.example .env.local
+   ```
+
+   Edit `.env.local`:
+   ```
+   # For local MongoDB
+   MONGODB_URI=mongodb://localhost:27017/lifecafe
+
+   # OR for MongoDB Atlas
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/lifecafe
    ```
 
 4. **Install Dependencies**
@@ -237,109 +271,116 @@ Item detail pages use Next.js dynamic routing with `[slug]` parameter and are cl
    ```
 
 6. **Initialize Database** (automatic on first API request)
+   - Database and collections are created automatically
+   - Indexes are created on first request
    - Or manually: `npm run db:init`
 
 ## Deployment on DigitalOcean App Platform
 
-### Production Setup with DigitalOcean Managed Database
+### Option 1: MongoDB Atlas (Recommended for Production)
 
-**Step 1: Create PostgreSQL Database**
-1. Go to DigitalOcean Dashboard → Databases
-2. Click "Create Database"
-3. Select:
-   - Database engine: **PostgreSQL** (latest version)
-   - Datacenter region: Choose closest to your app
-   - Database configuration: Select size based on needs (Basic plan is fine for small apps)
-   - Database name: `lifecafe-db` (or any name you prefer)
-4. Click "Create Database Cluster"
+**Step 1: Create MongoDB Atlas Cluster**
+1. Sign up at https://www.mongodb.com/cloud/atlas
+2. Create a new project
+3. Click "Build a Database"
+4. Select **M0 Free** tier (or paid tier for production)
+5. Choose your cloud provider and region (closest to your app)
+6. Create cluster (takes 3-5 minutes)
 
-**Step 2: Get Database Connection String and Certificate**
-1. Once database is created, go to "Connection Details"
-2. Connection parameters format: Select **Connection String**
-3. Copy the connection string (format: `postgresql://username:password@host:port/database?sslmode=require`)
-4. **Download CA Certificate:**
-   - Scroll down to "Connection Details"
-   - Click "Download CA Certificate"
-   - Save as `db-ca-certificate.crt` in your project root directory
-   - This certificate is required for secure SSL connections
-5. Note: You can also get individual connection parameters:
-   - Host
-   - Port
-   - Username
-   - Password
-   - Database name
+**Step 2: Configure Database Access**
+1. Go to "Database Access" in Atlas dashboard
+2. Click "Add New Database User"
+3. Create a username and password (save these!)
+4. Set privileges to "Read and write to any database"
+5. Click "Add User"
 
-**Step 3: Configure Trusted Sources (Security)**
-1. In database settings, go to "Trusted Sources"
-2. Add your DigitalOcean App Platform app
-   - Option A: Select your app from the dropdown if it's already created
-   - Option B: Temporarily allow all IPs during setup, then restrict later
+**Step 3: Configure Network Access**
+1. Go to "Network Access" in Atlas dashboard
+2. Click "Add IP Address"
+3. Click "Allow Access from Anywhere" (0.0.0.0/0)
+   - For production, you can restrict to DigitalOcean App Platform IPs later
+4. Click "Confirm"
 
-**Step 4: Configure App Platform Environment Variables**
-1. Go to your App Platform app settings
+**Step 4: Get Connection String**
+1. Go to "Database" and click "Connect" on your cluster
+2. Choose "Connect your application"
+3. Copy the connection string
+4. Replace `<password>` with your database user password
+5. Replace `<database>` with `lifecafe` (or your preferred name)
+6. Example: `mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/lifecafe?retryWrites=true&w=majority`
+
+**Step 5: Configure App Platform Environment Variables**
+1. Go to your DigitalOcean App Platform app settings
 2. Navigate to "Settings" → "App-Level Environment Variables"
 3. Add the following environment variable:
-   - Key: `DATABASE_URL`
-   - Value: Your PostgreSQL connection string (from Step 2)
+   - Key: `MONGODB_URI`
+   - Value: Your MongoDB Atlas connection string
    - Scope: Check both "build" and "runtime"
    - Encrypt: ✓ (recommended for security)
 4. Save changes
 
-**Step 5: Add CA Certificate to Repository**
-1. Place the downloaded `db-ca-certificate.crt` in your project root
-2. **Important:** The certificate file is automatically excluded from git (in `.gitignore`)
-3. For deployment, you have two options:
-   - **Option A (Recommended):** Add certificate content as environment variable `DATABASE_CA_CERT`
-   - **Option B:** Manually upload certificate to server (not recommended for App Platform)
-
 **Step 6: Deploy Application**
-1. Deploy or redeploy your app
-2. The app will automatically:
-   - Detect PostgreSQL via `DATABASE_URL`
-   - Load CA certificate from file or environment variable
-   - Initialize database tables on first API request
-   - Use SSL for all database connections
+1. Push your code to Git
+2. DigitalOcean will automatically redeploy
+3. The app will automatically:
+   - Connect to MongoDB Atlas
+   - Create database and collections on first request
+   - Create indexes for optimal performance
 
 **Step 7: Verify Deployment**
 1. Open your deployed app URL
-2. Check logs for "SSL certificate loaded" message
+2. Check logs for "MongoDB connection initialized"
 3. Select a table and place a test order
-4. Check DigitalOcean database metrics to verify connections
-5. View logs in App Platform to confirm successful database initialization
+4. Check MongoDB Atlas metrics to verify connections
+5. View data in Atlas dashboard under "Browse Collections"
+
+### Option 2: Self-Hosted MongoDB
+
+If you prefer to host MongoDB yourself:
+1. Set up a MongoDB instance on a VPS or cloud server
+2. Configure authentication and security
+3. Get your connection string: `mongodb://username:password@host:port/lifecafe`
+4. Add `MONGODB_URI` to App Platform environment variables
+5. Ensure MongoDB server is accessible from your App Platform app
 
 ### Environment Variable Summary
 
 **Local Development**
-- `DATABASE_URL`: `postgresql://lifecafe:lifecafe@localhost:5432/lifecafe`
+- `MONGODB_URI`: `mongodb://localhost:27017/lifecafe`
   - Create `.env.local` file with this variable
-  - See `POSTGRES_SETUP.md` for setup instructions
+  - Or use MongoDB Atlas connection string for cloud testing
 
-**Production (DigitalOcean)**
-- `DATABASE_URL`: PostgreSQL connection string (provided by DigitalOcean)
-  - Automatically includes `?sslmode=require` parameter
-- `DATABASE_CA_CERT` (optional): CA certificate content as environment variable
-  - Alternative to including certificate file in deployment
-  - Get content from `db-ca-certificate.crt` file
+**Production (MongoDB Atlas)**
+- `MONGODB_URI`: MongoDB Atlas connection string
+  - Format: `mongodb+srv://username:password@cluster.mongodb.net/lifecafe`
+  - Get from Atlas dashboard
+
+**Production (Self-Hosted)**
+- `MONGODB_URI`: Self-hosted MongoDB connection string
+  - Format: `mongodb://username:password@host:port/lifecafe`
 
 ### Troubleshooting
 
 **Connection Issues:**
-- Verify database is running and accessible
-- Check trusted sources/firewall settings in DigitalOcean database settings
+- Verify MongoDB is running and accessible
+- Check network access settings in MongoDB Atlas
 - Confirm connection string is correct (check for typos)
+- Ensure password doesn't contain special characters that need URL encoding
 - Check app logs for specific error messages
 
-**SSL Certificate Issues:**
-If you see "self-signed certificate" errors:
-- Ensure the `db-ca-certificate.crt` file is in your project root
-- Download the certificate from DigitalOcean database "Connection Details"
-- For deployment, set `DATABASE_CA_CERT` environment variable with certificate content
-- Check logs for "SSL certificate loaded" message
-- Ensure your `DATABASE_URL` contains `?sslmode=require`
-- The app automatically handles self-signed certificates with proper CA validation
+**Authentication Errors:**
+- Verify database user exists with correct permissions
+- Check username and password in connection string
+- Ensure user has "Read and write" privileges
 
 **Database Not Initializing:**
 - Check application logs for errors
 - Manually run `npm run db:init` locally to test
-- Verify app has network access to database
-- Ensure database user has proper permissions (see POSTGRES_SETUP.md)
+- Verify app has network access to MongoDB
+- For Atlas, ensure IP whitelist includes 0.0.0.0/0 or App Platform IPs
+
+**Performance Issues:**
+- Check MongoDB Atlas metrics for slow queries
+- Verify indexes are created (check logs for "Database initialized")
+- Consider upgrading from M0 free tier for production workloads
+- Enable connection pooling (already configured in `src/lib/db.js`)

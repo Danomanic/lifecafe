@@ -1,142 +1,80 @@
-import pkg from 'pg';
-import fs from 'fs';
-import path from 'path';
-const { Pool } = pkg;
+import { MongoClient, ObjectId } from 'mongodb';
 
-// Create singleton PostgreSQL pool
-let pgPool = null;
+// MongoDB connection singleton
+let client = null;
+let db = null;
 
-// PostgreSQL Database Client
-class PostgresClient {
-  constructor(pool) {
-    this.pool = pool;
+// Get MongoDB connection string
+function getConnectionString() {
+  return process.env.MONGODB_URI || 'mongodb://localhost:27017/lifecafe';
+}
+
+// Connect to MongoDB
+async function connectToDatabase() {
+  if (db) {
+    return db;
   }
 
-  async execute(query) {
-    const { sql, args } = typeof query === 'string' ? { sql: query, args: [] } : query;
+  try {
+    const uri = getConnectionString();
+    client = new MongoClient(uri);
+    await client.connect();
 
-    // Convert ? placeholders to $1, $2, etc. for PostgreSQL
-    let pgSql = sql;
-    let paramIndex = 1;
-    pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
+    // Extract database name from connection string or use default
+    const dbName = uri.split('/').pop().split('?')[0] || 'lifecafe';
+    db = client.db(dbName);
 
-    try {
-      const result = await this.pool.query(pgSql, args || []);
-
-      return {
-        rows: result.rows,
-        rowsAffected: result.rowCount,
-        lastInsertRowid: result.rows[0]?.id || null,
-      };
-    } catch (error) {
-      console.error('PostgreSQL query error:', error);
-      throw error;
-    }
+    console.log('MongoDB connection initialized');
+    return db;
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    throw error;
   }
 }
 
-// Get database client
-export function getDbClient() {
-  if (!pgPool) {
-    const connectionString = process.env.DATABASE_URL || 'postgresql://lifecafe:lifecafe@localhost:5432/lifecafe';
-
-    // Determine SSL configuration based on connection string
-    const isLocalhost = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
-    const requiresSSL = connectionString.includes('sslmode=require') || !isLocalhost;
-
-    const poolConfig = {
-      connectionString,
-    };
-
-    // Configure SSL for managed databases (like DigitalOcean)
-    if (requiresSSL) {
-      const sslConfig = {
-        rejectUnauthorized: false,
-      };
-
-      // Load CA certificate if available
-      const certPath = path.join(process.cwd(), 'db-ca-certificate.crt');
-      try {
-        if (fs.existsSync(certPath)) {
-          sslConfig.ca = fs.readFileSync(certPath, 'utf8');
-          console.log('SSL certificate loaded from file');
-        } else if (process.env.DATABASE_CA_CERT) {
-          sslConfig.ca = process.env.DATABASE_CA_CERT;
-          console.log('SSL certificate loaded from environment variable');
-        }
-      } catch (error) {
-        console.warn('Failed to load SSL certificate:', error.message);
-      }
-
-      poolConfig.ssl = sslConfig;
-    }
-
-    pgPool = new Pool(poolConfig);
-
-    console.log(`PostgreSQL connection initialized (SSL: ${requiresSSL ? 'enabled' : 'disabled'})`);
+// Get database instance
+export async function getDb() {
+  if (!db) {
+    await connectToDatabase();
   }
-  return new PostgresClient(pgPool);
+  return db;
 }
 
-// Initialize database tables
+// Get collections
+export async function getCollections() {
+  const database = await getDb();
+  return {
+    orders: database.collection('orders'),
+    orderItems: database.collection('order_items'),
+  };
+}
+
+// Initialize database (create indexes)
 export async function initDatabase() {
-  const db = getDbClient();
+  try {
+    const { orders, orderItems } = await getCollections();
 
-  // Create orders table
-  await db.execute(`
-    CREATE TABLE IF NOT EXISTS orders (
-      id SERIAL PRIMARY KEY,
-      table_number INTEGER NOT NULL,
-      status TEXT DEFAULT 'pending',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+    // Create indexes for orders collection
+    await orders.createIndex({ tableNumber: 1 });
+    await orders.createIndex({ status: 1 });
+    await orders.createIndex({ createdAt: -1 });
 
-  // Create order_items table
-  await db.execute(`
-    CREATE TABLE IF NOT EXISTS order_items (
-      id SERIAL PRIMARY KEY,
-      order_id INTEGER NOT NULL,
-      item_name TEXT NOT NULL,
-      item_slug TEXT NOT NULL,
-      options_json TEXT,
-      quantity INTEGER DEFAULT 1,
-      price NUMERIC(10, 2),
-      notes TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE
-    )
-  `);
+    // Create indexes for order_items collection
+    await orderItems.createIndex({ orderId: 1 });
 
-  // Create indexes
-  await db.execute(`
-    CREATE INDEX IF NOT EXISTS idx_orders_table_number ON orders(table_number)
-  `);
-
-  await db.execute(`
-    CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id)
-  `);
-
-  console.log('Database initialized successfully (PostgreSQL)');
+    console.log('Database initialized successfully (MongoDB)');
+  } catch (error) {
+    console.error('Database initialization error:', error);
+    throw error;
+  }
 }
 
-// Helper function to get SQL for aggregating order items
-export function getOrderItemsAggregationSQL() {
-  return `json_agg(
-    json_build_object(
-      'id', oi.id,
-      'name', oi.item_name,
-      'slug', oi.item_slug,
-      'options', oi.options_json,
-      'price', oi.price,
-      'quantity', oi.quantity,
-      'notes', oi.notes
-    )
-  )`;
+// Helper to convert MongoDB ObjectId to string
+export function objectIdToString(id) {
+  return id ? id.toString() : null;
 }
 
-// Helper function to get current timestamp SQL
-export function getCurrentTimestampSQL() {
-  return 'CURRENT_TIMESTAMP';
+// Helper to create ObjectId from string
+export function stringToObjectId(id) {
+  return id ? new ObjectId(id) : null;
 }

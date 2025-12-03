@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDbClient, initDatabase, getOrderItemsAggregationSQL } from '@/lib/db';
+import { getCollections, initDatabase, objectIdToString } from '@/lib/db';
 
 // Initialize database on first request
 let dbInitialized = false;
@@ -27,56 +27,51 @@ export async function POST(request) {
       );
     }
 
-    const db = getDbClient();
+    const { orders, orderItems } = await getCollections();
 
-    // Create order
-    const orderResult = await db.execute({
-      sql: 'INSERT INTO orders (table_number, status) VALUES (?, ?) RETURNING id',
-      args: [tableNumber, 'pending'],
-    });
-    const orderId = orderResult.rows[0].id;
+    // Create order document
+    const orderDoc = {
+      tableNumber: parseInt(tableNumber),
+      status: 'pending',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const orderResult = await orders.insertOne(orderDoc);
+    const orderId = orderResult.insertedId;
 
     // Insert order items
-    for (const item of items) {
-      await db.execute({
-        sql: `INSERT INTO order_items
-              (order_id, item_name, item_slug, options_json, price, quantity, notes)
-              VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        args: [
-          orderId,
-          item.name,
-          item.slug,
-          item.options ? JSON.stringify(item.options) : null,
-          item.price || null,
-          item.quantity || 1,
-          item.notes || null,
-        ],
-      });
-    }
+    const itemDocs = items.map(item => ({
+      orderId: orderId,
+      itemName: item.name,
+      itemSlug: item.slug,
+      options: item.options || null,
+      price: item.price || null,
+      quantity: item.quantity || 1,
+      notes: item.notes || null,
+      createdAt: new Date(),
+    }));
+
+    await orderItems.insertMany(itemDocs);
 
     // Fetch the complete order with items
-    const itemsAggregation = getOrderItemsAggregationSQL();
-    const order = await db.execute({
-      sql: `SELECT
-              o.id,
-              o.table_number,
-              o.status,
-              o.created_at,
-              ${itemsAggregation} as items
-            FROM orders o
-            LEFT JOIN order_items oi ON o.id = oi.order_id
-            WHERE o.id = ?
-            GROUP BY o.id, o.table_number, o.status, o.created_at`,
-      args: [orderId],
-    });
+    const orderWithItems = await orders.findOne({ _id: orderId });
+    const items_list = await orderItems.find({ orderId: orderId }).toArray();
 
-    const orderData = order.rows[0];
     const result = {
-      id: orderData.id,
-      tableNumber: orderData.table_number,
-      status: orderData.status,
-      createdAt: orderData.created_at,
-      items: JSON.parse(orderData.items),
+      id: objectIdToString(orderWithItems._id),
+      tableNumber: orderWithItems.tableNumber,
+      status: orderWithItems.status,
+      createdAt: orderWithItems.createdAt,
+      items: items_list.map(item => ({
+        id: objectIdToString(item._id),
+        name: item.itemName,
+        slug: item.itemSlug,
+        options: item.options,
+        price: item.price,
+        quantity: item.quantity,
+        notes: item.notes,
+      })),
     };
 
     return NextResponse.json(result, { status: 201 });
@@ -98,50 +93,50 @@ export async function GET(request) {
     const tableNumber = searchParams.get('tableNumber');
     const status = searchParams.get('status');
 
-    const db = getDbClient();
-    const itemsAggregation = getOrderItemsAggregationSQL();
+    const { orders, orderItems } = await getCollections();
 
-    let sql = `SELECT
-                o.id,
-                o.table_number,
-                o.status,
-                o.created_at,
-                o.updated_at,
-                ${itemsAggregation} as items
-              FROM orders o
-              LEFT JOIN order_items oi ON o.id = oi.order_id`;
-
-    const conditions = [];
-    const args = [];
-
+    // Build query filter
+    const filter = {};
     if (tableNumber) {
-      conditions.push('o.table_number = ?');
-      args.push(tableNumber);
+      filter.tableNumber = parseInt(tableNumber);
     }
-
     if (status) {
-      conditions.push('o.status = ?');
-      args.push(status);
+      filter.status = status;
     }
 
-    if (conditions.length > 0) {
-      sql += ' WHERE ' + conditions.join(' AND ');
-    }
+    // Fetch orders
+    const ordersList = await orders
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .toArray();
 
-    sql += ' GROUP BY o.id, o.table_number, o.status, o.created_at, o.updated_at ORDER BY o.created_at DESC';
+    // Fetch items for all orders
+    const ordersWithItems = await Promise.all(
+      ordersList.map(async (order) => {
+        const items = await orderItems
+          .find({ orderId: order._id })
+          .toArray();
 
-    const result = await db.execute({ sql, args });
+        return {
+          id: objectIdToString(order._id),
+          tableNumber: order.tableNumber,
+          status: order.status,
+          createdAt: order.createdAt,
+          updatedAt: order.updatedAt,
+          items: items.map(item => ({
+            id: objectIdToString(item._id),
+            name: item.itemName,
+            slug: item.itemSlug,
+            options: item.options,
+            price: item.price,
+            quantity: item.quantity,
+            notes: item.notes,
+          })),
+        };
+      })
+    );
 
-    const orders = result.rows.map((row) => ({
-      id: row.id,
-      tableNumber: row.table_number,
-      status: row.status,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      items: JSON.parse(row.items),
-    }));
-
-    return NextResponse.json(orders);
+    return NextResponse.json(ordersWithItems);
   } catch (error) {
     console.error('Error fetching orders:', error);
     return NextResponse.json(
