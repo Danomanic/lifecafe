@@ -67,9 +67,9 @@ export default function OrdersPage() {
     }
   };
 
-  // Delete an order
+  // Cancel an order
   const handleDeleteOrder = async (orderId) => {
-    if (!confirm('Are you sure you want to delete this order?')) {
+    if (!confirm('Are you sure you want to cancel this order?')) {
       return;
     }
 
@@ -77,18 +77,24 @@ export default function OrdersPage() {
       setDeletingOrderId(orderId);
 
       const response = await fetch(`/api/orders/${orderId}`, {
-        method: 'DELETE',
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'cancelled' }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete order');
+        throw new Error('Failed to cancel order');
       }
 
-      // Remove deleted order from the list
-      setOrders(orders.filter(order => order.id !== orderId));
+      // Re-fetch orders to show updated status
+      if (tableNumber) {
+        await fetchOrders(tableNumber);
+      }
     } catch (err) {
-      console.error('Error deleting order:', err);
-      alert('Failed to delete order: ' + err.message);
+      console.error('Error cancelling order:', err);
+      alert('Failed to cancel order: ' + err.message);
     } finally {
       setDeletingOrderId(null);
     }
@@ -110,7 +116,6 @@ export default function OrdersPage() {
 
   // Get dynamic options from item (exclude standard fields)
   const getItemOptions = (item) => {
-    const excludeKeys = ['id', 'name', 'itemSlug', 'quantity', 'notes', 'orderId', 'createdAt', 'options', 'price'];
     const options = [];
 
     // First, check if there's an 'options' object (MongoDB structure)
@@ -119,16 +124,6 @@ export default function OrdersPage() {
         if (value !== null && value !== undefined && value !== '') {
           options.push({ key, value: String(value) });
         }
-      }
-    }
-
-    // Then check for any other fields not in excludeKeys
-    for (const [key, value] of Object.entries(item)) {
-      if (!excludeKeys.includes(key) && value !== null && value !== undefined && value !== '') {
-        // Format the key nicely (camelCase to Title Case)
-        const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-        // Convert to string to ensure it's renderable
-        options.push({ key: formattedKey, value: String(value) });
       }
     }
 
@@ -215,13 +210,14 @@ export default function OrdersPage() {
                           <div className="flex-1">
                             <p className="font-bold text-sm text-gray-900">{item.name}</p>
                             {options.length > 0 && (
-                              <div className="text-xs text-gray-700 mt-0.5 flex flex-wrap gap-1">
+                              <ul className="text-xs mt-1 ml-4 list-disc">
                                 {options.map((option, idx) => (
-                                  <span key={idx} className="inline-block bg-gray-200 rounded px-1.5 py-0.5 font-semibold">
-                                    {option.value}
-                                  </span>
+                                  <li key={idx} className="text-gray-600">
+                                    <span className="font-normal">{option.key}: </span>
+                                    <span className="font-bold text-gray-900">{option.value}</span>
+                                  </li>
                                 ))}
-                              </div>
+                              </ul>
                             )}
                             {item.notes && (
                               <p className="text-xs text-gray-600 mt-0.5 font-medium">Note: {item.notes}</p>

@@ -175,11 +175,20 @@ export default function BaristaPage() {
         body: JSON.stringify({
           tableNumber: order.tableNumber,
           items: order.items.map(item => {
+            // Get options - they're stored as objects in MongoDB
             let options = null;
-            try {
-              options = item.options ? JSON.parse(item.options) : null;
-            } catch (e) {
-              console.error('Error parsing options:', e);
+            if (item.options) {
+              // If it's already an object, use it directly
+              if (typeof item.options === 'object') {
+                options = item.options;
+              } else {
+                // If it's a string, parse it (backwards compatibility)
+                try {
+                  options = JSON.parse(item.options);
+                } catch (e) {
+                  console.error('Error parsing options:', e);
+                }
+              }
             }
 
             return {
@@ -261,51 +270,68 @@ export default function BaristaPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2">
-            {sortedTableNumbers.map((tableNum) => (
+            {sortedTableNumbers.map((tableNum) => {
+              // Calculate total price for all orders at this table
+              const tableTotal = ordersByTable[tableNum].reduce((total, order) => {
+                const orderTotal = order.items.reduce((sum, item) => {
+                  return sum + (item.price || 0) * (item.quantity || 1);
+                }, 0);
+                return total + orderTotal;
+              }, 0);
+
+              return (
               <div key={tableNum} className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800">
-                <div className="bg-indigo-700 text-white px-2 py-1">
+                <div className="bg-indigo-700 text-white px-2 py-1 flex justify-between items-center">
                   <h2 className="text-base font-bold">Table {tableNum}</h2>
+                  <span className="text-base font-bold">£{tableTotal.toFixed(2)}</span>
                 </div>
 
                 <div className="divide-y divide-gray-800">
                   {ordersByTable[tableNum].map((order) => (
                     <div key={order.id} className="p-2">
-                      <div className="flex justify-between items-center mb-1">
-                        <p className="text-xs text-gray-400">
-                          #{order.id}
-                        </p>
-                        <span className="text-xs font-bold text-orange-400">{getElapsedTime(order.createdAt)}</span>
-                      </div>
-
                       <div className="space-y-1">
-                        {order.items.map((item) => {
-                          // Parse options if they exist
+                        {order.items.map((item, index) => {
+                          // Get options - they're stored as objects in MongoDB
                           let options = null;
-                          try {
-                            options = item.options ? JSON.parse(item.options) : null;
-                          } catch (e) {
-                            console.error('Error parsing options:', e);
+                          if (item.options) {
+                            // If it's already an object, use it directly
+                            if (typeof item.options === 'object') {
+                              options = item.options;
+                            } else {
+                              // If it's a string, parse it (backwards compatibility)
+                              try {
+                                options = JSON.parse(item.options);
+                              } catch (e) {
+                                console.error('Error parsing options:', e);
+                              }
+                            }
                           }
 
                           return (
                             <div key={item.id}>
                               <div className="flex justify-between items-baseline">
                                 <p className="font-bold text-base text-gray-100">{item.name}</p>
-                                {item.quantity > 1 && (
-                                  <span className="text-base font-bold text-gray-300">x{item.quantity}</span>
-                                )}
+                                <div className="flex items-baseline gap-2">
+                                  {item.quantity > 1 && (
+                                    <span className="text-base font-bold text-gray-300">x{item.quantity}</span>
+                                  )}
+                                  {index === 0 && (
+                                    <span className="text-base font-bold text-orange-400">{getElapsedTime(order.createdAt)}</span>
+                                  )}
+                                </div>
                               </div>
                               {options && (
-                                <div className="flex justify-between items-center text-xs mt-0.5">
+                                <ul className="text-sm mt-1 ml-4 list-disc">
                                   {Object.entries(options).map(([key, value], index) => (
-                                    <span key={key} className="text-gray-300 font-medium capitalize">
-                                      {value}
-                                    </span>
+                                    <li key={key} className="text-gray-400">
+                                      <span className="font-normal">{key}: </span>
+                                      <span className="font-bold text-gray-100">{value}</span>
+                                    </li>
                                   ))}
-                                </div>
+                                </ul>
                               )}
                               {item.price && (
-                                <p className="text-xs text-green-400 mt-0.5">£{item.price.toFixed(2)}</p>
+                                <p className="text-xs text-green-400 mt-0.5 text-right">£{item.price.toFixed(2)}</p>
                               )}
                               {item.notes && (
                                 <p className="text-xs text-gray-400 mt-0.5 italic">&quot;{item.notes}&quot;</p>
@@ -335,7 +361,8 @@ export default function BaristaPage() {
                   ))}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -361,17 +388,26 @@ export default function BaristaPage() {
                       )}
                       <div className="ml-4 mt-1">
                         {order.items.map((item, idx) => {
+                          // Get options - they're stored as objects in MongoDB
                           let options = null;
-                          try {
-                            options = item.options ? JSON.parse(item.options) : null;
-                          } catch (e) {
-                            console.error('Error parsing options:', e);
+                          if (item.options) {
+                            // If it's already an object, use it directly
+                            if (typeof item.options === 'object') {
+                              options = item.options;
+                            } else {
+                              // If it's a string, parse it (backwards compatibility)
+                              try {
+                                options = JSON.parse(item.options);
+                              } catch (e) {
+                                console.error('Error parsing options:', e);
+                              }
+                            }
                           }
 
                           return (
                             <div key={item.id}>
                               • {item.name}
-                              {options && Object.entries(options).map(([key, value]) => ` [${value}]`).join('')}
+                              {options && Object.entries(options).map(([key, value]) => ` [${key}: ${value}]`).join('')}
                               {item.price && ` £${item.price.toFixed(2)}`}
                               {item.quantity > 1 && ` x${item.quantity}`}
                             </div>
