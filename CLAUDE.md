@@ -50,6 +50,7 @@ The application uses **PostgreSQL** for both local development and production.
 - Location: `src/lib/db.js`
 - Client: `pg` (node-postgres)
 - Connection pooling enabled
+- SSL: Automatically enabled for non-localhost connections (accepts self-signed certificates)
 
 **Database Schema:**
 ```sql
@@ -304,15 +305,19 @@ Item detail pages use Next.js dynamic routing with `[slug]` parameter and are cl
 
 **Connection Issues:**
 - Verify database is running and accessible
-- Check trusted sources/firewall settings
-- Confirm connection string is correct
+- Check trusted sources/firewall settings in DigitalOcean database settings
+- Confirm connection string is correct (check for typos)
 - Check app logs for specific error messages
 
 **SSL Certificate Issues:**
-- Add `?sslmode=require` to connection string
-- Or set SSL verification in code (already configured)
+If you see "self-signed certificate" errors:
+- The app automatically handles self-signed certificates for non-localhost connections
+- Ensure your `DATABASE_URL` contains `?sslmode=require` for DigitalOcean databases
+- DigitalOcean automatically includes this parameter in their connection strings
+- If the error persists after the latest code update, try redeploying the app
 
 **Database Not Initializing:**
 - Check application logs for errors
 - Manually run `npm run db:init` locally to test
 - Verify app has network access to database
+- Ensure database user has proper permissions (see POSTGRES_SETUP.md)

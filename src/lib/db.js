@@ -38,12 +38,24 @@ export function getDbClient() {
   if (!pgPool) {
     const connectionString = process.env.DATABASE_URL || 'postgresql://lifecafe:lifecafe@localhost:5432/lifecafe';
 
-    pgPool = new Pool({
-      connectionString,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    });
+    // Determine SSL configuration based on connection string
+    const isLocalhost = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
+    const requiresSSL = connectionString.includes('sslmode=require') || !isLocalhost;
 
-    console.log('PostgreSQL connection initialized');
+    const poolConfig = {
+      connectionString,
+    };
+
+    // Configure SSL for managed databases (like DigitalOcean)
+    if (requiresSSL) {
+      poolConfig.ssl = {
+        rejectUnauthorized: false, // Accept self-signed certificates from managed databases
+      };
+    }
+
+    pgPool = new Pool(poolConfig);
+
+    console.log(`PostgreSQL connection initialized (SSL: ${requiresSSL ? 'enabled' : 'disabled'})`);
   }
   return new PostgresClient(pgPool);
 }
