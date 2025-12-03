@@ -1,4 +1,6 @@
 import pkg from 'pg';
+import fs from 'fs';
+import path from 'path';
 const { Pool } = pkg;
 
 // Create singleton PostgreSQL pool
@@ -48,10 +50,25 @@ export function getDbClient() {
 
     // Configure SSL for managed databases (like DigitalOcean)
     if (requiresSSL) {
-      poolConfig.ssl = {
+      const sslConfig = {
         rejectUnauthorized: false,
-        ca: process.env.DATABASE_CA_CERT,
       };
+
+      // Load CA certificate if available
+      const certPath = path.join(process.cwd(), 'db-ca-certificate.crt');
+      try {
+        if (fs.existsSync(certPath)) {
+          sslConfig.ca = fs.readFileSync(certPath, 'utf8');
+          console.log('SSL certificate loaded from file');
+        } else if (process.env.DATABASE_CA_CERT) {
+          sslConfig.ca = process.env.DATABASE_CA_CERT;
+          console.log('SSL certificate loaded from environment variable');
+        }
+      } catch (error) {
+        console.warn('Failed to load SSL certificate:', error.message);
+      }
+
+      poolConfig.ssl = sslConfig;
     }
 
     pgPool = new Pool(poolConfig);

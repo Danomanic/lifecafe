@@ -50,7 +50,10 @@ The application uses **PostgreSQL** for both local development and production.
 - Location: `src/lib/db.js`
 - Client: `pg` (node-postgres)
 - Connection pooling enabled
-- SSL: Automatically enabled for non-localhost connections (accepts self-signed certificates)
+- SSL: Automatically enabled for non-localhost connections
+  - Supports CA certificate file (`db-ca-certificate.crt` in project root)
+  - Falls back to environment variable `DATABASE_CA_CERT` if file not found
+  - Accepts self-signed certificates from managed database providers
 
 **Database Schema:**
 ```sql
@@ -250,11 +253,16 @@ Item detail pages use Next.js dynamic routing with `[slug]` parameter and are cl
    - Database name: `lifecafe-db` (or any name you prefer)
 4. Click "Create Database Cluster"
 
-**Step 2: Get Database Connection String**
+**Step 2: Get Database Connection String and Certificate**
 1. Once database is created, go to "Connection Details"
 2. Connection parameters format: Select **Connection String**
 3. Copy the connection string (format: `postgresql://username:password@host:port/database?sslmode=require`)
-4. Note: You can also get individual connection parameters:
+4. **Download CA Certificate:**
+   - Scroll down to "Connection Details"
+   - Click "Download CA Certificate"
+   - Save as `db-ca-certificate.crt` in your project root directory
+   - This certificate is required for secure SSL connections
+5. Note: You can also get individual connection parameters:
    - Host
    - Port
    - Username
@@ -277,18 +285,27 @@ Item detail pages use Next.js dynamic routing with `[slug]` parameter and are cl
    - Encrypt: ✓ (recommended for security)
 4. Save changes
 
-**Step 5: Deploy Application**
+**Step 5: Add CA Certificate to Repository**
+1. Place the downloaded `db-ca-certificate.crt` in your project root
+2. **Important:** The certificate file is automatically excluded from git (in `.gitignore`)
+3. For deployment, you have two options:
+   - **Option A (Recommended):** Add certificate content as environment variable `DATABASE_CA_CERT`
+   - **Option B:** Manually upload certificate to server (not recommended for App Platform)
+
+**Step 6: Deploy Application**
 1. Deploy or redeploy your app
 2. The app will automatically:
    - Detect PostgreSQL via `DATABASE_URL`
+   - Load CA certificate from file or environment variable
    - Initialize database tables on first API request
-   - Use PostgreSQL-compatible SQL queries
+   - Use SSL for all database connections
 
-**Step 6: Verify Deployment**
+**Step 7: Verify Deployment**
 1. Open your deployed app URL
-2. Select a table and place a test order
-3. Check DigitalOcean database metrics to verify connections
-4. View logs in App Platform to confirm successful database initialization
+2. Check logs for "SSL certificate loaded" message
+3. Select a table and place a test order
+4. Check DigitalOcean database metrics to verify connections
+5. View logs in App Platform to confirm successful database initialization
 
 ### Environment Variable Summary
 
@@ -300,6 +317,9 @@ Item detail pages use Next.js dynamic routing with `[slug]` parameter and are cl
 **Production (DigitalOcean)**
 - `DATABASE_URL`: PostgreSQL connection string (provided by DigitalOcean)
   - Automatically includes `?sslmode=require` parameter
+- `DATABASE_CA_CERT` (optional): CA certificate content as environment variable
+  - Alternative to including certificate file in deployment
+  - Get content from `db-ca-certificate.crt` file
 
 ### Troubleshooting
 
@@ -311,10 +331,12 @@ Item detail pages use Next.js dynamic routing with `[slug]` parameter and are cl
 
 **SSL Certificate Issues:**
 If you see "self-signed certificate" errors:
-- The app automatically handles self-signed certificates for non-localhost connections
-- Ensure your `DATABASE_URL` contains `?sslmode=require` for DigitalOcean databases
-- DigitalOcean automatically includes this parameter in their connection strings
-- If the error persists after the latest code update, try redeploying the app
+- Ensure the `db-ca-certificate.crt` file is in your project root
+- Download the certificate from DigitalOcean database "Connection Details"
+- For deployment, set `DATABASE_CA_CERT` environment variable with certificate content
+- Check logs for "SSL certificate loaded" message
+- Ensure your `DATABASE_URL` contains `?sslmode=require`
+- The app automatically handles self-signed certificates with proper CA validation
 
 **Database Not Initializing:**
 - Check application logs for errors
