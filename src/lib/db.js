@@ -49,7 +49,8 @@ export function getDbClient() {
     // Configure SSL for managed databases (like DigitalOcean)
     if (requiresSSL) {
       poolConfig.ssl = {
-        rejectUnauthorized: false, // Accept self-signed certificates from managed databases
+        rejectUnauthorized: false,
+        ca: process.env.DATABASE_CA_CERT,
       };
     }
 
