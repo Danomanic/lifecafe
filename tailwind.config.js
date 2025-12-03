@@ -4,10 +4,18 @@ module.exports = {
     // include other paths as necessary
   ],
   safelist: [
-    "bg-yellow-900",
-    "bg-red-900",
-    "bg-slate-900",
-    "bg-stone-900",
+    "bg-yellow-800",
+    "bg-red-800",
+    "bg-slate-800",
+    "bg-stone-800",
+    "bg-purple-800",
+    'bg-indigo-800',
+    'bg-green-800',
+    'bg-teal-800',
+    'bg-blue-800',
+    'bg-amber-800',
+    'bg-orange-800',
+    'bg-gray-800',
   ],
   theme: {
     extend: {},

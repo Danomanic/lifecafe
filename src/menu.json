@@ -1,0 +1,468 @@
+{
+  "breakfast": {
+    "title": "Breakfast",
+    "items": [
+      {
+        "name": "Croissant",
+        "options": {
+          "type": [
+            {"value": "plain with butter & jam", "price": 2.00},
+            {"value": "cheese", "price": 2.80},
+            {"value": "ham & cheese", "price": 3.80}
+          ]
+        }
+      },
+      {
+        "name": "Danish pastry",
+        "price": 2.00
+      },
+      {
+        "name": "Pain au chocolat",
+        "price": 2.00
+      },
+      {
+        "name": "Toast",
+        "options": {
+          "bread": ["brown", "white"],
+          "topping": [
+            {"value": "butter & jam", "price": 1.50},
+            {"value": "cream cheese", "price": 2.00},
+            {"value": "choc spread", "price": 2.00}
+          ]
+        }
+      },
+      {
+        "name": "Gluten Free toast",
+        "price": 1.75
+      },
+      {
+        "name": "Granola",
+        "description": "Served with yoghurt, berries & honey",
+        "price": 4.50
+      },
+      {
+        "name": "Beans on toast",
+        "options": {
+          "size": [
+            {"value": "regular", "price": 3.50},
+            {"value": "child", "price": 2.00}
+          ]
+        }
+      },
+      {
+        "name": "Smoked salmon & cream cheese bagel",
+        "price": 4.75
+      },
+      {
+        "name": "Banana",
+        "price": 1.00
+      }
+    ]
+  },
+  "lunch": {
+    "title": "Lunch",
+    "sandwiches": {
+      "title": "Sandwiches",
+      "name": "Sandwich",
+      "description": "Filling of your choice served on ciabatta, brown roll, sliced bread or gluten free bread alongside kettle chips & a salad garnish",
+      "price": 6.95,
+      "options": {
+        "bread": ["ciabatta", "brown roll", "sliced bread", "gluten free bread"],
+        "filling": [
+          "Turkey & cranberry with warm stuffing",
+          "Ham, brie & cranberry",
+          "Beef, coleslaw & gherkin",
+          "Beef, red onion & horseradish",
+          "Tuna mayo with black olives",
+          "Tuna mayo with cucumber",
+          "Egg mayonnaise",
+          "Prawn mayonnaise (+£1)",
+          "Smoked salmon & cream cheese (+£1)",
+          "Cheese & chutney"
+        ]
+      }
+    },
+    "soup": {
+      "title": "Soup",
+      "items": [
+        {
+          "name": "Homemade soup",
+          "description": "Fresh and simply good for you, served with a roll",
+          "dietary": ["V", "GF"],
+          "options": {
+            "size": [
+              {"value": "small", "price": 3.50},
+              {"value": "large", "price": 4.80}
+            ]
+          }
+        },
+        {
+          "name": "Homemade soup and sandwich",
+          "description": "A bowl of our lovely soup served with a sandwich of your choice (on sliced bread)",
+          "price": 6.95
+        }
+      ]
+    },
+    "toasties": {
+      "title": "Toasties",
+      "description": "Served with deli salad & kettle chips",
+      "price": 6.95,
+      "items": [
+        {
+          "name": "Christmas Toastie",
+          "description": "Turkey, brie, bacon & cranberry"
+        },
+        {
+          "name": "Fishy Toastie",
+          "description": "Tuna & cheese"
+        },
+        {
+          "name": "Hot Toastie",
+          "description": "Chorizo, cheese & chilli jam"
+        },
+        {
+          "name": "French Toastie",
+          "description": "Brie, red onion and cranberry"
+        },
+        {
+          "name": "English Toastie",
+          "description": "Bacon, tomato & cheese"
+        },
+        {
+          "name": "Simple Toastie",
+          "description": "Cheese & ham"
+        }
+      ]
+    },
+    "ploughmans": {
+      "title": "Ploughmans",
+      "name": "Christmas Ploughmans",
+      "description": "Choose three of the following: seasonal pork pie, pate, roast ham, Brie, Stilton, Wensleydale and Cranberry. Served with homemade Christmas chutney, bread and crackers",
+      "price": 8.00,
+      "options": {
+        "items": ["seasonal pork pie", "pate", "roast ham", "Brie", "Stilton", "Wensleydale and Cranberry"],
+        "choose": 3
+      }
+    },
+    "quiche": {
+      "title": "Quiche",
+      "name": "Mediterranean Quiche",
+      "description": "Served with a deli salad, homemade coleslaw & a crusty bread roll",
+      "dietary": ["V"],
+      "price": 8.00
+    },
+    "sausageRoll": {
+      "title": "Sausage Roll",
+      "name": "Homemade Pork, Sage & Chestnut Sausage Roll",
+      "description": "Served warm with a deli salad, homemade coleslaw & a crusty bread roll",
+      "price": 8.00
+    },
+    "fishermansPlatter": {
+      "title": "Fisherman's Platter",
+      "name": "Fisherman's Platter",
+      "description": "Prawns, smoked salmon pate & mackerel. Served with salad, mayonnaise & artisan bread",
+      "price": 8.00
+    },
+    "jackets": {
+      "title": "Jacket Potatoes",
+      "name": "Jacket Potato",
+      "description": "Oven-baked potatoes topped with multiple choices of homemade coleslaw, beans, tuna, cheese or cottage cheese with a salad on the side",
+      "price": 6.95,
+      "options": {
+        "toppings": ["homemade coleslaw", "beans", "tuna", "cheese", "cottage cheese"]
+      }
+    }
+  },
+  "childrensMenu": {
+    "title": "Children's Menu",
+    "items": [
+      {
+        "name": "Kids Sandwich",
+        "options": {
+          "filling": ["tuna", "cheese", "ham"]
+        },
+        "price": 2.00
+      },
+      {
+        "name": "Beans on toast",
+        "price": 2.00
+      },
+      {
+        "name": "Baby soup with roll",
+        "price": 2.00
+      },
+      {
+        "name": "Kids pick 'n' mix",
+        "description": "Choose 6 items from: cucumber sticks, cheese, ham, turkey, houmous, raisins and yoghurt",
+        "price": 3.00,
+        "options": {
+          "items": ["cucumber sticks", "cheese", "ham", "turkey", "houmous", "raisins", "yoghurt"],
+          "choose": 6
+        }
+      }
+    ]
+  },
+  "cakesAndSnacks": {
+    "title": "Cakes & Snacks",
+    "items": [
+      {
+        "name": "Freshly made delicious cakes",
+        "description": "Selection of cakes",
+        "price": 2.50
+      },
+      {
+        "name": "Strawberry cream tea",
+        "price": 4.00
+      },
+      {
+        "name": "Border Biscuits",
+        "description": "Various flavours",
+        "price": 0.50
+      },
+      {
+        "name": "Toasted items",
+        "options": {
+          "type": ["teacake", "bagel", "crumpets"]
+        },
+        "price": 1.80
+      },
+      {
+        "name": "Smoked Salmon & cream cheese bagel",
+        "price": 4.00
+      }
+    ]
+  },
+  "glutenFreeCakes": {
+    "title": "Gluten Free Cakes",
+    "items": [
+      {
+        "name": "Cheese Scones",
+        "price": 2.00
+      },
+      {
+        "name": "Lemon Drizzle cake",
+        "description": "Home made",
+        "price": 2.50
+      },
+      {
+        "name": "Warm Chocolate Brownie",
+        "price": 2.00
+      },
+      {
+        "name": "Vegan options",
+        "price": 2.50
+      },
+      {
+        "name": "Strawberry cream tea",
+        "options": {
+          "scone": ["plain", "cheese"]
+        },
+        "price": 4.00
+      }
+    ]
+  },
+  "drinks": {
+    "title": "Drinks",
+    "coffee": {
+      "title": "Coffee",
+      "items": [
+        {
+          "position": 1,
+          "name": "Cappuccino",
+          "slug": "cappuccino",
+          "options": {
+            "size": [
+              {"value": "regular", "price": 2.60},
+              {"value": "large", "price": 3.00}
+            ]
+          }
+        },
+        {
+          "position": 2,
+          "name": "Americano",
+          "slug": "americano",
+          "description": "Black Coffee",
+          "options": {
+            "size": [
+              {"value": "regular", "price": 2.00},
+              {"value": "large", "price": 2.50}
+            ]
+          }
+        },
+        {
+          "name": "Cafetiere",
+          "slug": "cafetiere",
+          "options": {
+            "size": [
+              {"value": "regular", "price": 2.50},
+              {"value": "large", "price": 4.50}
+            ]
+          }
+        },
+        {
+          "position": 3,
+          "name": "Latte",
+          "slug": "latte",
+          "options": {
+            "type": [
+              {"value": "caffine", "price": 0.00},
+              {"value": "decaff", "price": 0.00}
+            ],
+            "shots": [
+              {"value": "single", "price": 2.60},
+              {"value": "double", "price": 3.00}
+            ],
+            "syrup": [
+              {"value": "none", "price": 0.00},
+              {"value": "vanilla", "price": 0.50},
+              {"value": "caramel", "price": 0.50},
+              {"value": "hazelnut", "price": 0.50},
+              {"value": "gingerbread", "price": 0.50},
+              {"value": "ameretto", "price": 0.50}
+            ]
+          }
+        },
+        {
+          "name": "Expresso",
+          "slug": "expresso",
+          "price": 2.00
+        },
+        {
+          "name": "Macchiato",
+          "slug": "macchiato",
+          "price": 2.50
+        },
+        {
+          "position": 4,
+          "name": "Flat White",
+          "slug": "flat-white",
+          "options": {
+            "shots": [
+              {"value": "regular", "price": 2.70},
+              {"value": "large", "price": 3.00}
+            ]
+          }
+        },
+        {
+          "name": "Cortado",
+          "slug": "cortado",
+          "price": 2.70
+        },
+        {
+          "position": 5,
+          "name": "Mocha",
+          "slug": "mocha",
+          "price": 3.00
+        }
+      ]
+    },
+    "tea": {
+      "title": "Tea",
+      "items": [
+        {
+          "name": "Tea",
+          "slug": "english-tea",
+          "price": 1.00,
+          "options": {
+            "size": [
+              {"value": "cup", "price": 1.00},
+              {"value": "pot", "price": 2.50},
+              {"value": "pot-for-Two", "price": 2.50}
+            ],
+            "milk": ["semi-skimmed", "oat", "almond", "soya"]
+          }
+        },
+        {
+          "name": "Decaf Tea",
+          "slug": "decaf-tea",
+          "price": 1.00,
+          "options": {
+            "size": [
+              {"value": "cup", "price": 1.00},
+              {"value": "pot", "price": 2.50},
+              {"value": "pot-for-Two", "price": 2.50}
+            ],
+            "milk": ["semi-skimmed", "oat", "almond", "soya"]
+          }
+        },
+        {
+          "name": "Earl Grey",
+          "slug": "earl-tea",
+          "price": 1.00,
+          "options": {
+            "size": [
+              {"value": "cup", "price": 1.00},
+              {"value": "pot", "price": 2.50},
+              {"value": "pot-for-Two", "price": 2.50}
+            ],
+            "milk": ["semi-skimmed", "oat", "almond", "soya"]
+          }
+        }
+      ]
+    },
+    "hotChocolate": {
+      "title": "Hot Chocolate",
+      "items": [
+        {
+          "name": "Divine Hot Chocolate",
+          "slug": "divine-hot-chocolate",
+          "price": 2.50
+        },
+        {
+          "name": "Little Cherubs Hot Chocolate",
+          "slug": "little-cherubs-hot-chocolate",
+          "description": "Kids size",
+          "price": 1.40
+        },
+        {
+          "name": "Chocolate Royale",
+          "slug": "chocolate-royale",
+          "description": "With flake & mini marshmallows",
+          "price": 3.00
+        }
+      ]
+    },
+    "cold": {
+      "title": "Cold Drinks",
+      "items": [
+        {
+          "name": "Chilled Drinks",
+          "slug": "chilled-drinks",
+          "options": {
+            "type": ["Coke", "Fresh Orange", "Apple Juice"]
+          },
+          "price": 1.50
+        },
+        {
+          "name": "Water",
+          "slug": "water",
+          "options": {
+            "type": ["still", "sparkling"]
+          },
+          "price": 1.50
+        },
+        {
+          "name": "Fruit Presse",
+          "slug": "fruit-presse",
+          "options": {
+            "flavour": ["Elderflower", "Raspberry Lemonade", "Ginger Beer"]
+          },
+          "price": 2.00
+        },
+        {
+          "name": "Fruit Shoot",
+          "slug": "fruit-shoot",
+          "options": {
+            "flavour": ["Orange", "Blackcurrent"]
+          },
+          "price": 1.40
+        },
+        {
+          "name": "Juice",
+          "slug": "juice",
+          "price": 0.50
+        }
+      ]
+    }
+  }
+}

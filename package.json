@@ -6,9 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:init": "node scripts/init-db.js"
   },
   "dependencies": {
+    "@libsql/client": "^0.15.15",
     "next": "15.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0"
