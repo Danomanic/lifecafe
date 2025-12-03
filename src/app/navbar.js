@@ -13,7 +13,7 @@ export default function Navbar() {
           </Link>
           <Link className="px-4 py-3 block w-full text-center text-white bg-blue-900 active:text-violet-500 hover:bg-blue-800 focus:outline-none focus:ring text-xl font-bold"
             href="/">
-            Home
+            Menu
           </Link>
         </div>
       </div>
