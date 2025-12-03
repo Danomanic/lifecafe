@@ -110,14 +110,25 @@ export default function OrdersPage() {
 
   // Get dynamic options from item (exclude standard fields)
   const getItemOptions = (item) => {
-    const excludeKeys = ['id', 'name', 'itemSlug', 'quantity', 'notes', 'orderId', 'createdAt'];
+    const excludeKeys = ['id', 'name', 'itemSlug', 'quantity', 'notes', 'orderId', 'createdAt', 'options', 'price'];
     const options = [];
 
+    // First, check if there's an 'options' object (MongoDB structure)
+    if (item.options && typeof item.options === 'object') {
+      for (const [key, value] of Object.entries(item.options)) {
+        if (value !== null && value !== undefined && value !== '') {
+          options.push({ key, value: String(value) });
+        }
+      }
+    }
+
+    // Then check for any other fields not in excludeKeys
     for (const [key, value] of Object.entries(item)) {
       if (!excludeKeys.includes(key) && value !== null && value !== undefined && value !== '') {
         // Format the key nicely (camelCase to Title Case)
         const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-        options.push({ key: formattedKey, value });
+        // Convert to string to ensure it's renderable
+        options.push({ key: formattedKey, value: String(value) });
       }
     }
 
