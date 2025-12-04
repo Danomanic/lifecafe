@@ -1,5 +1,5 @@
 
-import ItemButton from './component/itemButton';
+import ItemButton from './components/ItemButton';
 import Navbar from './navbar';
 
 

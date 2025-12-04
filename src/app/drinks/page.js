@@ -1,48 +1,11 @@
 import menuData from '../../menu.json';
-import ItemButton from '../component/itemButton';
-import Navbar from '../navbar';
+import MenuCategoryPage from '../components/MenuCategoryPage';
 
 export default function Drinks() {
-  const drinks = menuData.drinks;
+  // Extract drink sections from menu data
+  const drinkSections = Object.keys(menuData.drinks)
+    .filter(key => key !== 'title' && menuData.drinks[key].items)
+    .map(key => menuData.drinks[key]);
 
-  // Group drinks by category and sort by position
-  const drinksByCategory = {};
-  Object.keys(drinks).forEach((key) => {
-    if (key !== 'title' && drinks[key].items) {
-      // Sort items by position (items without position go to the end)
-      const sortedItems = [...drinks[key].items].sort((a, b) => {
-        const posA = a.position ?? 999;
-        const posB = b.position ?? 999;
-        return posA - posB;
-      });
-      drinksByCategory[drinks[key].title] = sortedItems;
-    }
-  });
-
-  const colors = [ 'slate'];
-
-  return (
-    <div className="">
-      <Navbar />
-
-      <main className="flex-grow">
-        {/* Display drinks grouped by category */}
-        {Object.keys(drinksByCategory).map((categoryTitle) => (
-          <div key={categoryTitle} className="mb-4">
-            <h2 className="text-xl font-bold mb-2 text-black bg-brand-yellow p-2 text-center">{categoryTitle}</h2>
-            <div className="grid grid-cols-2 gap-1 px-1">
-              {drinksByCategory[categoryTitle].map((item, index) => (
-                <ItemButton
-                  key={item.slug}
-                  name={item.name}
-                  link={`/item/${item.slug}?from=/drinks`}
-                  colour={colors[index % colors.length]}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-      </main>
-    </div>
-  );
+  return <MenuCategoryPage sections={drinkSections} returnPath="/drinks" />;
 }

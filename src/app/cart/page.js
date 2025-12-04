@@ -2,64 +2,34 @@
 
 import Navbar from "@/app/navbar";
 import TableSelectorModal from '../components/TableSelectorModal';
-import { clearCart, getCart, getCartTotal, removeFromCart, updateCartItemQuantity, updateCartTableNumber } from '@/lib/cart';
+import { clearCart, removeFromCart, updateCartItemQuantity, updateCartTableNumber } from '@/lib/cart';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useCart } from '@/hooks/useCart';
+import { useTableNumber } from '@/hooks/useTableNumber';
 
 export default function CartPage() {
   const router = useRouter();
-  const [cart, setCart] = useState({ tableNumber: null, items: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [showTableModal, setShowTableModal] = useState(false);
-
-  // Load cart on mount
-  useEffect(() => {
-    loadCart();
-
-    // Listen for cart updates
-    const handleCartUpdate = () => {
-      loadCart();
-    };
-
-    window.addEventListener('cartUpdated', handleCartUpdate);
-
-    return () => {
-      window.removeEventListener('cartUpdated', handleCartUpdate);
-    };
-  }, []);
-
-  const loadCart = () => {
-    const currentCart = getCart();
-    setCart(currentCart);
-  };
+  const { cart, total: totalPrice, reloadCart } = useCart();
+  const { updateTableNumber: updateTableNumberHook } = useTableNumber();
 
   const handleRemoveItem = (cartId) => {
     removeFromCart(cartId);
     window.dispatchEvent(new Event('cartUpdated'));
-    loadCart();
   };
 
   const handleUpdateQuantity = (cartId, newQuantity) => {
     if (newQuantity < 1) return;
     updateCartItemQuantity(cartId, newQuantity);
-    loadCart();
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const handleChangeTable = (newTableNumber) => {
-    // Update the standalone table number in localStorage
-    localStorage.setItem('tableNumber', newTableNumber);
-
-    // Update the cart's table number
+    updateTableNumberHook(newTableNumber);
     updateCartTableNumber(newTableNumber);
-
-    // Dispatch event to notify other components
-    window.dispatchEvent(new CustomEvent('tableNumberChanged', { detail: newTableNumber }));
-
-    // Reload cart to reflect changes
-    loadCart();
-
-    // Close modal
     setShowTableModal(false);
   };
 
@@ -120,8 +90,6 @@ export default function CartPage() {
       setIsSubmitting(false);
     }
   };
-
-  const totalPrice = getCartTotal();
 
   return (
     <div>
