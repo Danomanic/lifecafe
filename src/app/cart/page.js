@@ -1,9 +1,9 @@
 'use client';
 
 import Navbar from "@/app/navbar";
+import { clearCart, getCart, getCartTotal, removeFromCart, updateCartItemQuantity } from '@/lib/cart';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getCart, removeFromCart, updateCartItemQuantity, clearCart, getCartTotal } from '@/lib/cart';
 
 export default function CartPage() {
   const router = useRouter();
@@ -223,7 +223,7 @@ export default function CartPage() {
               <button
                 onClick={handleClearCart}
                 disabled={isSubmitting}
-                className="w-full bg-brand-pink text-white font-bold py-2 px-4 rounded-lg hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base mt-4"
+                className="w-full bg-brand-pink text-white font-bold py-2 px-4 rounded-lg hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base mt-16"
               >
                 Clear All Items
               </button>
