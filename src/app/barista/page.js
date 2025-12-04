@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import FullscreenButton from '../components/FullscreenButton';
 
 export default function BaristaPage() {
   const [orders, setOrders] = useState([]);
@@ -509,6 +510,7 @@ export default function BaristaPage() {
           </div>
         </div>
       )}
+      <FullscreenButton />
     </div>
   );
 }
