@@ -21,7 +21,7 @@ export async function PATCH(request, { params }) {
     const { status } = body;
 
     // Validate status
-    const validStatuses = ['pending', 'completed', 'cancelled'];
+    const validStatuses = ['pending', 'ready', 'completed', 'cancelled'];
     if (!status || !validStatuses.includes(status)) {
       return NextResponse.json(
         { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
