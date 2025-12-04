@@ -102,8 +102,8 @@ export default function CartPage() {
       clearCart();
       window.dispatchEvent(new Event('cartUpdated'));
 
-      // Redirect to success page
-      router.push('/drinks?success=true');
+      // Redirect to menu page
+      router.push('/');
     } catch (error) {
       console.error('Error submitting order:', error);
       setSubmitError(error.message);
@@ -124,12 +124,6 @@ export default function CartPage() {
             <span className="text-base font-semibold text-gray-700">Table {cart.tableNumber}</span>
           )}
         </div>
-
-        {!cart.tableNumber && (
-          <div className="bg-brand-yellow border-2 border-black text-black px-4 py-2 rounded-lg mb-4 text-base font-semibold">
-            Please select a table number first
-          </div>
-        )}
 
         {submitError && (
           <div className="bg-brand-pink border-2 border-black text-white px-4 py-2 rounded-lg mb-4 text-base font-semibold">
