@@ -46,15 +46,6 @@ export default function CartPage() {
     loadCart();
   };
 
-  const handleClearCart = () => {
-    if (!confirm('Are you sure you want to clear all items from your order?')) {
-      return;
-    }
-    clearCart();
-    window.dispatchEvent(new Event('cartUpdated'));
-    loadCart();
-  };
-
   const handleChangeTable = (newTableNumber) => {
     // Update the standalone table number in localStorage
     localStorage.setItem('tableNumber', newTableNumber);
@@ -238,30 +229,13 @@ export default function CartPage() {
               <p className="text-xs text-black mt-1">{cart.items.length} item{cart.items.length !== 1 ? 's' : ''}</p>
             </div>
 
-            <div className="space-y-2">
-              <button
-                onClick={handleSendToKitchen}
-                disabled={isSubmitting || !cart.tableNumber}
-                className="w-full bg-brand-teal text-white font-bold py-3 px-4 rounded-lg hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-lg"
-              >
-                {isSubmitting ? 'Sending to Kitchen...' : 'Send to Kitchen'}
-              </button>
-
-              <button
-                onClick={handleClearCart}
-                disabled={isSubmitting}
-                className="w-full bg-brand-pink text-white font-bold py-2 px-4 rounded-lg hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base mt-16"
-              >
-                Clear All Items
-              </button>
-
-              <button
-                onClick={() => router.push('/')}
-                className="w-full bg-white border-2 border-black text-black font-bold py-2 px-4 rounded-lg hover:bg-brand-yellow transition-colors text-base"
-              >
-                Add More Items
-              </button>
-            </div>
+            <button
+              onClick={handleSendToKitchen}
+              disabled={isSubmitting || !cart.tableNumber}
+              className="w-full bg-brand-teal text-white font-bold py-3 px-4 rounded-lg hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-lg"
+            >
+              {isSubmitting ? 'Sending to Kitchen...' : 'Send to Kitchen'}
+            </button>
           </>
         )}
       </div>
