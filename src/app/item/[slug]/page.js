@@ -40,10 +40,10 @@ export default function ItemPage({ params }) {
   useEffect(() => {
     if (!slug) return;
 
-    // Search through all drinks to find the item with matching slug
-    const drinks = menuData.drinks;
     let foundItem = null;
 
+    // Search through drinks
+    const drinks = menuData.drinks;
     Object.keys(drinks).forEach((categoryKey) => {
       if (categoryKey !== 'title' && drinks[categoryKey].items) {
         const found = drinks[categoryKey].items.find(i => i.slug === slug);
@@ -52,6 +52,25 @@ export default function ItemPage({ params }) {
         }
       }
     });
+
+    // If not found in drinks, search through cakes
+    if (!foundItem) {
+      // Search cakesAndSnacks
+      if (menuData.cakesAndSnacks && menuData.cakesAndSnacks.items) {
+        const found = menuData.cakesAndSnacks.items.find(i => i.slug === slug);
+        if (found) {
+          foundItem = found;
+        }
+      }
+
+      // Search glutenFreeCakes
+      if (!foundItem && menuData.glutenFreeCakes && menuData.glutenFreeCakes.items) {
+        const found = menuData.glutenFreeCakes.items.find(i => i.slug === slug);
+        if (found) {
+          foundItem = found;
+        }
+      }
+    }
 
     setItem(foundItem);
 

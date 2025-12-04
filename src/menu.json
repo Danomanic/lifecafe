@@ -207,20 +207,24 @@
     "items": [
       {
         "name": "Freshly made delicious cakes",
+        "slug": "fresh-cakes",
         "description": "Selection of cakes",
         "price": 2.50
       },
       {
         "name": "Strawberry cream tea",
+        "slug": "strawberry-cream-tea",
         "price": 4.00
       },
       {
         "name": "Border Biscuits",
+        "slug": "border-biscuits",
         "description": "Various flavours",
         "price": 0.50
       },
       {
         "name": "Toasted items",
+        "slug": "toasted-items",
         "options": {
           "type": ["teacake", "bagel", "crumpets"]
         },
@@ -228,6 +232,7 @@
       },
       {
         "name": "Smoked Salmon & cream cheese bagel",
+        "slug": "smoked-salmon-bagel",
         "price": 4.00
       }
     ]
@@ -237,23 +242,28 @@
     "items": [
       {
         "name": "Cheese Scones",
+        "slug": "gf-cheese-scones",
         "price": 2.00
       },
       {
         "name": "Lemon Drizzle cake",
+        "slug": "gf-lemon-drizzle",
         "description": "Home made",
         "price": 2.50
       },
       {
         "name": "Warm Chocolate Brownie",
+        "slug": "gf-chocolate-brownie",
         "price": 2.00
       },
       {
         "name": "Vegan options",
+        "slug": "gf-vegan-options",
         "price": 2.50
       },
       {
         "name": "Strawberry cream tea",
+        "slug": "gf-strawberry-cream-tea",
         "options": {
           "scone": ["plain", "cheese"]
         },

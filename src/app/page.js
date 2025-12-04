@@ -6,6 +6,7 @@ import Navbar from './navbar';
 export default function Home() {
   const categories = [
     { name: "Drinks", link: "/drinks", colour: "blue" },
+    { name: "Cakes", link: "/cakes", colour: "red" },
     { name: "Lunch", link: "/lunch", colour: "green" },
   ];
 
