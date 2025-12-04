@@ -320,7 +320,7 @@ export default function BaristaPage() {
                   <div className="divide-y divide-gray-800 overflow-y-auto flex-1">
                     {ordersByTable[tableNum].map((order) => (
                       <div key={order.id} className="p-2">
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           {order.items.map((item, index) => {
                             // Get options - they're stored as objects in MongoDB
                             let options = null;
@@ -339,7 +339,7 @@ export default function BaristaPage() {
                             }
 
                             return (
-                              <div key={item.id}>
+                              <div key={item.id} className={`pb-2 ${index < order.items.length - 1 ? 'border-b border-gray-700' : ''}`}>
                                 <div className="flex justify-between items-baseline">
                                   <p className="font-bold text-base text-gray-100">{item.name}</p>
                                   <div className="flex items-baseline gap-2">
