@@ -15,6 +15,20 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "LifeCafe",
   description: "App for taking cafe orders",
+  manifest: "/manifest.json",
+  themeColor: "#5d3754",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: "cover"
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "LifeCafe"
+  }
 };
 
 export default function RootLayout({ children }) {
