@@ -30,6 +30,7 @@ export default function CartPage() {
   const handleChangeTable = (newTableNumber) => {
     updateTableNumberHook(newTableNumber);
     updateCartTableNumber(newTableNumber);
+    window.dispatchEvent(new Event('cartUpdated'));
     setShowTableModal(false);
   };
 
