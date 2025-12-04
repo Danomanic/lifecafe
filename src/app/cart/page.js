@@ -1,7 +1,7 @@
 'use client';
 
 import Navbar from "@/app/navbar";
-import { clearCart, getCart, getCartTotal, removeFromCart, updateCartItemQuantity } from '@/lib/cart';
+import { clearCart, getCart, getCartTotal, removeFromCart, updateCartItemQuantity, updateCartTableNumber } from '@/lib/cart';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -55,9 +55,19 @@ export default function CartPage() {
   };
 
   const handleChangeTable = (newTableNumber) => {
+    // Update the standalone table number in localStorage
     localStorage.setItem('tableNumber', newTableNumber);
+
+    // Update the cart's table number
+    updateCartTableNumber(newTableNumber);
+
+    // Dispatch event to notify other components
     window.dispatchEvent(new CustomEvent('tableNumberChanged', { detail: newTableNumber }));
+
+    // Reload cart to reflect changes
     loadCart();
+
+    // Close modal
     setShowTableModal(false);
   };
 

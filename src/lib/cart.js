@@ -116,3 +116,14 @@ export function getCartTotal() {
     return total + (item.price || 0) * (item.quantity || 1);
   }, 0);
 }
+
+/**
+ * Update the table number for the current cart
+ * @param {string} tableNumber - New table number
+ */
+export function updateCartTableNumber(tableNumber) {
+  const cart = getCart();
+  cart.tableNumber = tableNumber;
+  saveCart(cart);
+  return cart;
+}
