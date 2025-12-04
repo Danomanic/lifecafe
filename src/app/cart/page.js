@@ -10,6 +10,7 @@ export default function CartPage() {
   const [cart, setCart] = useState({ tableNumber: null, items: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [showTableModal, setShowTableModal] = useState(false);
 
   // Load cart on mount
   useEffect(() => {
@@ -51,6 +52,13 @@ export default function CartPage() {
     clearCart();
     window.dispatchEvent(new Event('cartUpdated'));
     loadCart();
+  };
+
+  const handleChangeTable = (newTableNumber) => {
+    localStorage.setItem('tableNumber', newTableNumber);
+    window.dispatchEvent(new CustomEvent('tableNumberChanged', { detail: newTableNumber }));
+    loadCart();
+    setShowTableModal(false);
   };
 
   const handleSendToKitchen = async () => {
@@ -121,7 +129,15 @@ export default function CartPage() {
         <div className="flex justify-between items-center mb-3">
           <h1 className="text-xl font-bold">Review Order</h1>
           {cart.tableNumber && (
-            <span className="text-base font-semibold text-gray-700">Table {cart.tableNumber}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-base font-semibold text-gray-700">Table {cart.tableNumber}</span>
+              <button
+                onClick={() => setShowTableModal(true)}
+                className="text-brand-teal text-sm font-semibold underline hover:opacity-80"
+              >
+                Change
+              </button>
+            </div>
           )}
         </div>
 
@@ -238,6 +254,36 @@ export default function CartPage() {
           </>
         )}
       </div>
+
+      {/* Table Change Modal */}
+      {showTableModal && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 flex justify-center items-center p-4 z-50">
+          <div className="w-full max-w-md bg-white shadow-lg py-2 rounded-lg">
+            <div className="border-b border-gray-300 p-3">
+              <h2 className="text-xl font-bold text-center text-black">Change Table</h2>
+            </div>
+            <div className="grid grid-cols-3 gap-2 p-3">
+              {[...Array(12)].map((_, i) => (
+                <button
+                  key={i}
+                  className="bg-brand-teal text-white py-5 px-4 rounded-lg hover:opacity-90 font-bold text-xl"
+                  onClick={() => handleChangeTable(String(i + 1))}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+            <div className="p-3 pt-0">
+              <button
+                onClick={() => setShowTableModal(false)}
+                className="w-full bg-white border-2 border-black text-black font-bold py-2 px-4 rounded-lg hover:bg-brand-yellow transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
