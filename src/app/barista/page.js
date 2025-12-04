@@ -380,7 +380,7 @@ export default function BaristaPage() {
                             disabled={completingOrderId === order.id || cancellingOrderId === order.id}
                             className="flex-1 bg-green-700 text-white font-bold px-2 py-1 rounded hover:bg-green-600 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors text-xs"
                           >
-                            {completingOrderId === order.id ? 'Completing...' : 'Complete'}
+                            {completingOrderId === order.id ? 'Marking...' : 'Mark as Ready'}
                           </button>
                           <button
                             onClick={() => handleCancelOrder(order.id)}
