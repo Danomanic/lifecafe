@@ -29,7 +29,7 @@ export default function Drinks() {
                 <ItemButton
                   key={item.slug}
                   name={item.name}
-                  link={`/item/${item.slug}`}
+                  link={`/item/${item.slug}?from=/drinks`}
                   colour={colors[index % colors.length]}
                 />
               ))}

@@ -351,12 +351,14 @@ export default function BaristaPage() {
                               </div>
                               {options && (
                                 <ul className="text-sm mt-1 ml-4 list-disc">
-                                  {Object.entries(options).map(([key, value], index) => (
-                                    <li key={key} className="text-gray-400">
-                                      <span className="font-normal">{key}: </span>
-                                      <span className="font-bold text-gray-100">{value}</span>
-                                    </li>
-                                  ))}
+                                  {Object.entries(options)
+                                    .filter(([key, value]) => value && value.toLowerCase() !== 'none')
+                                    .map(([key, value], index) => (
+                                      <li key={key} className="text-gray-400">
+                                        <span className="font-normal">{key}: </span>
+                                        <span className="font-bold text-gray-100">{value}</span>
+                                      </li>
+                                    ))}
                                 </ul>
                               )}
                               {item.price && (
@@ -436,7 +438,7 @@ export default function BaristaPage() {
                           return (
                             <div key={item.id}>
                               • {item.name}
-                              {options && Object.entries(options).map(([key, value]) => ` [${key}: ${value}]`).join('')}
+                              {options && Object.entries(options).filter(([key, value]) => value && value.toLowerCase() !== 'none').map(([key, value]) => ` [${key}: ${value}]`).join('')}
                               {item.price && ` £${item.price.toFixed(2)}`}
                               {item.quantity > 1 && ` x${item.quantity}`}
                             </div>

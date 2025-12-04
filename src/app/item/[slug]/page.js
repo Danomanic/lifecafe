@@ -4,6 +4,7 @@ import Navbar from "@/app/navbar";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import menuData from '../../../menu.json';
+import { addToCart } from '@/lib/cart';
 
 export default function ItemPage({ params }) {
   const router = useRouter();
@@ -11,14 +12,26 @@ export default function ItemPage({ params }) {
   const [tableNumber, setTableNumber] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [addedToCart, setAddedToCart] = useState(false);
   const [item, setItem] = useState(null);
   const [selectedOptions, setSelectedOptions] = useState({});
+  const [returnUrl, setReturnUrl] = useState('/drinks');
 
-  // Unwrap params on client side
+  // Unwrap params on client side and get return URL
   useEffect(() => {
     params.then((resolvedParams) => {
       setSlug(resolvedParams.slug);
     });
+
+    // Get the return URL from query params or referrer
+    const urlParams = new URLSearchParams(window.location.search);
+    const from = urlParams.get('from');
+    if (from) {
+      setReturnUrl(from);
+    } else {
+      // Default to drinks if no referrer specified
+      setReturnUrl('/drinks');
+    }
   }, [params]);
 
   // Find item in menu data when slug is available
@@ -93,10 +106,11 @@ export default function ItemPage({ params }) {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitError(null);
+    setAddedToCart(false);
 
     // Get the current table number from localStorage (in case it changed)
     const currentTableNumber = localStorage.getItem('tableNumber');
-    console.log('Submitting order for table:', currentTableNumber);
+    console.log('Adding to cart for table:', currentTableNumber);
 
     // Check if table number is set
     if (!currentTableNumber) {
@@ -105,42 +119,33 @@ export default function ItemPage({ params }) {
       return;
     }
 
-    const orderData = {
-      tableNumber: parseInt(currentTableNumber),
-      items: [
-        {
-          name: item.name,
-          slug: slug,
-          options: selectedOptions,
-          price: calculatePrice(),
-          quantity: 1,
-        },
-      ],
+    const cartItem = {
+      name: item.name,
+      slug: slug,
+      options: selectedOptions,
+      price: calculatePrice(),
+      quantity: 1,
     };
 
-    console.log('Order data being sent:', orderData);
+    console.log('Item being added to cart:', cartItem);
 
     try {
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderData),
-      });
+      // Add to cart
+      addToCart(cartItem, currentTableNumber);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to submit order');
-      }
+      // Dispatch custom event to notify navbar
+      window.dispatchEvent(new Event('cartUpdated'));
 
-      const order = await response.json();
-      console.log('Order created:', order);
+      // Show success message
+      setAddedToCart(true);
+      setIsSubmitting(false);
 
-      // Redirect back to drinks page or show success message
-      router.push('/drinks?success=true');
+      // Redirect back to category page after showing feedback
+      setTimeout(() => {
+        router.push(returnUrl);
+      }, 800);
     } catch (error) {
-      console.error('Error submitting order:', error);
+      console.error('Error adding to cart:', error);
       setSubmitError(error.message);
       setIsSubmitting(false);
     }
@@ -247,11 +252,19 @@ export default function ItemPage({ params }) {
 
           <button
             type="submit"
-            disabled={isSubmitting || !tableNumber}
-            className="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-xl"
+            disabled={isSubmitting || !tableNumber || addedToCart}
+            className={`w-full font-bold py-3 px-4 rounded-lg transition-colors text-xl ${
+              addedToCart
+                ? 'bg-green-600 text-white'
+                : 'bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed'
+            }`}
           >
-            {isSubmitting ? 'Submitting Order...' : 'Place Order'}
+            {addedToCart ? '✓ Added!' : isSubmitting ? 'Adding to Order...' : 'Add to Order'}
           </button>
+
+          {price && (
+            <p className="text-center text-gray-600 mt-2 text-base font-semibold">£{price.toFixed(2)}</p>
+          )}
         </form>
       </div>
     </div>
