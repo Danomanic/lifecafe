@@ -4,6 +4,7 @@
     "items": [
       {
         "name": "Croissant",
+        "slug": "croissant",
         "options": {
           "type": [
             {"value": "plain with butter & jam", "price": 2.00},
@@ -14,14 +15,17 @@
       },
       {
         "name": "Danish pastry",
+        "slug": "danish-pastry",
         "price": 2.00
       },
       {
         "name": "Pain au chocolat",
+        "slug": "pain-au-chocolat",
         "price": 2.00
       },
       {
         "name": "Toast",
+        "slug": "toast",
         "options": {
           "bread": ["brown", "white"],
           "topping": [
@@ -33,15 +37,18 @@
       },
       {
         "name": "Gluten Free toast",
+        "slug": "gluten-free-toast",
         "price": 1.75
       },
       {
         "name": "Granola",
+        "slug": "granola",
         "description": "Served with yoghurt, berries & honey",
         "price": 4.50
       },
       {
         "name": "Beans on toast",
+        "slug": "beans-on-toast",
         "options": {
           "size": [
             {"value": "regular", "price": 3.50},
@@ -51,10 +58,12 @@
       },
       {
         "name": "Smoked salmon & cream cheese bagel",
+        "slug": "breakfast-salmon-bagel",
         "price": 4.75
       },
       {
         "name": "Banana",
+        "slug": "banana",
         "price": 1.00
       }
     ]
@@ -64,6 +73,7 @@
     "sandwiches": {
       "title": "Sandwiches",
       "name": "Sandwich",
+      "slug": "sandwich",
       "description": "Filling of your choice served on ciabatta, brown roll, sliced bread or gluten free bread alongside kettle chips & a salad garnish",
       "price": 6.95,
       "options": {
@@ -87,6 +97,7 @@
       "items": [
         {
           "name": "Homemade soup",
+          "slug": "homemade-soup",
           "description": "Fresh and simply good for you, served with a roll",
           "dietary": ["V", "GF"],
           "options": {
@@ -98,6 +109,7 @@
         },
         {
           "name": "Homemade soup and sandwich",
+          "slug": "soup-and-sandwich",
           "description": "A bowl of our lovely soup served with a sandwich of your choice (on sliced bread)",
           "price": 6.95
         }
@@ -110,26 +122,32 @@
       "items": [
         {
           "name": "Christmas Toastie",
+          "slug": "christmas-toastie",
           "description": "Turkey, brie, bacon & cranberry"
         },
         {
           "name": "Fishy Toastie",
+          "slug": "fishy-toastie",
           "description": "Tuna & cheese"
         },
         {
           "name": "Hot Toastie",
+          "slug": "hot-toastie",
           "description": "Chorizo, cheese & chilli jam"
         },
         {
           "name": "French Toastie",
+          "slug": "french-toastie",
           "description": "Brie, red onion and cranberry"
         },
         {
           "name": "English Toastie",
+          "slug": "english-toastie",
           "description": "Bacon, tomato & cheese"
         },
         {
           "name": "Simple Toastie",
+          "slug": "simple-toastie",
           "description": "Cheese & ham"
         }
       ]
@@ -137,6 +155,7 @@
     "ploughmans": {
       "title": "Ploughmans",
       "name": "Christmas Ploughmans",
+      "slug": "christmas-ploughmans",
       "description": "Choose three of the following: seasonal pork pie, pate, roast ham, Brie, Stilton, Wensleydale and Cranberry. Served with homemade Christmas chutney, bread and crackers",
       "price": 8.00,
       "options": {
@@ -147,6 +166,7 @@
     "quiche": {
       "title": "Quiche",
       "name": "Mediterranean Quiche",
+      "slug": "mediterranean-quiche",
       "description": "Served with a deli salad, homemade coleslaw & a crusty bread roll",
       "dietary": ["V"],
       "price": 8.00
@@ -154,18 +174,21 @@
     "sausageRoll": {
       "title": "Sausage Roll",
       "name": "Homemade Pork, Sage & Chestnut Sausage Roll",
+      "slug": "pork-sage-sausage-roll",
       "description": "Served warm with a deli salad, homemade coleslaw & a crusty bread roll",
       "price": 8.00
     },
     "fishermansPlatter": {
       "title": "Fisherman's Platter",
       "name": "Fisherman's Platter",
+      "slug": "fishermans-platter",
       "description": "Prawns, smoked salmon pate & mackerel. Served with salad, mayonnaise & artisan bread",
       "price": 8.00
     },
     "jackets": {
       "title": "Jacket Potatoes",
       "name": "Jacket Potato",
+      "slug": "jacket-potato",
       "description": "Oven-baked potatoes topped with multiple choices of homemade coleslaw, beans, tuna, cheese or cottage cheese with a salad on the side",
       "price": 6.95,
       "options": {
@@ -178,6 +201,7 @@
     "items": [
       {
         "name": "Kids Sandwich",
+        "slug": "kids-sandwich",
         "options": {
           "filling": ["tuna", "cheese", "ham"]
         },
@@ -185,14 +209,17 @@
       },
       {
         "name": "Beans on toast",
+        "slug": "kids-beans-on-toast",
         "price": 2.00
       },
       {
         "name": "Baby soup with roll",
+        "slug": "baby-soup",
         "price": 2.00
       },
       {
         "name": "Kids pick 'n' mix",
+        "slug": "kids-pick-n-mix",
         "description": "Choose 6 items from: cucumber sticks, cheese, ham, turkey, houmous, raisins and yoghurt",
         "price": 3.00,
         "options": {
