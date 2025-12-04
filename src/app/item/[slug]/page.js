@@ -1,10 +1,10 @@
 'use client';
 
 import Navbar from "@/app/navbar";
+import { addToCart } from '@/lib/cart';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import menuData from '../../../menu.json';
-import { addToCart } from '@/lib/cart';
 
 export default function ItemPage({ params }) {
   const router = useRouter();
@@ -162,7 +162,7 @@ export default function ItemPage({ params }) {
       // Redirect back to category page after showing feedback
       setTimeout(() => {
         router.push(returnUrl);
-      }, 800);
+      }, 400);
     } catch (error) {
       console.error('Error adding to cart:', error);
       setSubmitError(error.message);
