@@ -283,125 +283,128 @@ export default function BaristaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 p-2">
-      <div className="max-w-6xl mx-auto">
-        {error && (
-          <div className="bg-red-900 border border-red-600 text-red-200 px-3 py-2 rounded mb-2 text-sm">
-            {error}
-          </div>
-        )}
+    <div className="bg-gray-950 overflow-y-auto">
+      {error && (
+        <div className="bg-red-900 border border-red-600 text-red-200 px-3 py-2 mx-2 mt-2 rounded text-sm">
+          {error}
+        </div>
+      )}
 
-        {orders.length === 0 ? (
+      {orders.length === 0 ? (
+        <div className="h-screen flex items-center justify-center p-4">
           <div className="bg-gray-900 rounded-lg p-6 text-center border border-gray-800">
             <div className="text-4xl mb-2">☕</div>
             <h2 className="text-lg font-semibold mb-1 text-gray-300">No Active Orders</h2>
             <p className="text-gray-500 text-xs">All caught up! New orders will appear here.</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-2">
+        </div>
+      ) : (
+        <div className="h-screen overflow-x-auto overflow-y-hidden p-2">
+          <div className="flex gap-2 h-full">
             {sortedTableNumbers.map((tableNum) => {
-              // Calculate total price for all orders at this table
-              const tableTotal = ordersByTable[tableNum].reduce((total, order) => {
-                const orderTotal = order.items.reduce((sum, item) => {
-                  return sum + (item.price || 0) * (item.quantity || 1);
+                // Calculate total price for all orders at this table
+                const tableTotal = ordersByTable[tableNum].reduce((total, order) => {
+                  const orderTotal = order.items.reduce((sum, item) => {
+                    return sum + (item.price || 0) * (item.quantity || 1);
+                  }, 0);
+                  return total + orderTotal;
                 }, 0);
-                return total + orderTotal;
-              }, 0);
 
-              return (
-              <div key={tableNum} className="bg-gray-900 rounded-lg overflow-hidden border border-gray-800">
-                <div className="bg-indigo-700 text-white px-2 py-1 flex justify-between items-center">
-                  <h2 className="text-base font-bold">Table {tableNum}</h2>
-                  <span className="text-base font-bold">£{tableTotal.toFixed(2)}</span>
-                </div>
+                return (
+                <div key={tableNum} className="flex-shrink-0 w-80 bg-gray-900 rounded-lg overflow-hidden border border-gray-800 flex flex-col h-full">
+                  <div className="bg-indigo-700 text-white px-2 py-1 flex justify-between items-center flex-shrink-0">
+                    <h2 className="text-base font-bold">Table {tableNum}</h2>
+                    <span className="text-base font-bold">£{tableTotal.toFixed(2)}</span>
+                  </div>
 
-                <div className="divide-y divide-gray-800">
-                  {ordersByTable[tableNum].map((order) => (
-                    <div key={order.id} className="p-2">
-                      <div className="space-y-1">
-                        {order.items.map((item, index) => {
-                          // Get options - they're stored as objects in MongoDB
-                          let options = null;
-                          if (item.options) {
-                            // If it's already an object, use it directly
-                            if (typeof item.options === 'object') {
-                              options = item.options;
-                            } else {
-                              // If it's a string, parse it (backwards compatibility)
-                              try {
-                                options = JSON.parse(item.options);
-                              } catch (e) {
-                                console.error('Error parsing options:', e);
+                  <div className="divide-y divide-gray-800 overflow-y-auto flex-1">
+                    {ordersByTable[tableNum].map((order) => (
+                      <div key={order.id} className="p-2">
+                        <div className="space-y-1">
+                          {order.items.map((item, index) => {
+                            // Get options - they're stored as objects in MongoDB
+                            let options = null;
+                            if (item.options) {
+                              // If it's already an object, use it directly
+                              if (typeof item.options === 'object') {
+                                options = item.options;
+                              } else {
+                                // If it's a string, parse it (backwards compatibility)
+                                try {
+                                  options = JSON.parse(item.options);
+                                } catch (e) {
+                                  console.error('Error parsing options:', e);
+                                }
                               }
                             }
-                          }
 
-                          return (
-                            <div key={item.id}>
-                              <div className="flex justify-between items-baseline">
-                                <p className="font-bold text-base text-gray-100">{item.name}</p>
-                                <div className="flex items-baseline gap-2">
-                                  {item.quantity > 1 && (
-                                    <span className="text-base font-bold text-gray-300">x{item.quantity}</span>
-                                  )}
-                                  {index === 0 && (
-                                    <span className={`text-base ${getElapsedTimeClass(order.createdAt)}`}>{getElapsedTime(order.createdAt)}</span>
-                                  )}
+                            return (
+                              <div key={item.id}>
+                                <div className="flex justify-between items-baseline">
+                                  <p className="font-bold text-base text-gray-100">{item.name}</p>
+                                  <div className="flex items-baseline gap-2">
+                                    {item.quantity > 1 && (
+                                      <span className="text-base font-bold text-gray-300">x{item.quantity}</span>
+                                    )}
+                                    {index === 0 && (
+                                      <span className={`text-base ${getElapsedTimeClass(order.createdAt)}`}>{getElapsedTime(order.createdAt)}</span>
+                                    )}
+                                  </div>
                                 </div>
+                                {options && (
+                                  <ul className="text-sm mt-1 ml-4 list-disc">
+                                    {Object.entries(options)
+                                      .filter(([key, value]) => value && value.toLowerCase() !== 'none')
+                                      .map(([key, value], index) => (
+                                        <li key={key} className="text-gray-400">
+                                          <span className="font-normal">{key}: </span>
+                                          <span className="font-bold text-gray-100">{value}</span>
+                                        </li>
+                                      ))}
+                                  </ul>
+                                )}
+                                {item.price && (
+                                  <p className="text-xs text-green-400 mt-0.5 text-right">£{item.price.toFixed(2)}</p>
+                                )}
+                                {item.notes && (
+                                  <p className="text-xs text-gray-400 mt-0.5 italic">&quot;{item.notes}&quot;</p>
+                                )}
                               </div>
-                              {options && (
-                                <ul className="text-sm mt-1 ml-4 list-disc">
-                                  {Object.entries(options)
-                                    .filter(([key, value]) => value && value.toLowerCase() !== 'none')
-                                    .map(([key, value], index) => (
-                                      <li key={key} className="text-gray-400">
-                                        <span className="font-normal">{key}: </span>
-                                        <span className="font-bold text-gray-100">{value}</span>
-                                      </li>
-                                    ))}
-                                </ul>
-                              )}
-                              {item.price && (
-                                <p className="text-xs text-green-400 mt-0.5 text-right">£{item.price.toFixed(2)}</p>
-                              )}
-                              {item.notes && (
-                                <p className="text-xs text-gray-400 mt-0.5 italic">&quot;{item.notes}&quot;</p>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
+                            );
+                          })}
+                        </div>
 
-                      <div className="flex gap-1 mt-1.5">
-                        <button
-                          onClick={() => handleCompleteOrder(order.id)}
-                          disabled={completingOrderId === order.id || cancellingOrderId === order.id}
-                          className="flex-1 bg-green-700 text-white font-bold px-2 py-1 rounded hover:bg-green-600 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors text-xs"
-                        >
-                          {completingOrderId === order.id ? 'Completing...' : 'Complete'}
-                        </button>
-                        <button
-                          onClick={() => handleCancelOrder(order.id)}
-                          disabled={completingOrderId === order.id || cancellingOrderId === order.id}
-                          className="bg-red-700 text-white font-bold px-1 py-1 rounded hover:bg-red-600 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors text-xs w-8"
-                        >
-                          ✕
-                        </button>
+                        <div className="flex gap-1 mt-1.5">
+                          <button
+                            onClick={() => handleCompleteOrder(order.id)}
+                            disabled={completingOrderId === order.id || cancellingOrderId === order.id}
+                            className="flex-1 bg-green-700 text-white font-bold px-2 py-1 rounded hover:bg-green-600 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors text-xs"
+                          >
+                            {completingOrderId === order.id ? 'Completing...' : 'Complete'}
+                          </button>
+                          <button
+                            onClick={() => handleCancelOrder(order.id)}
+                            disabled={completingOrderId === order.id || cancellingOrderId === order.id}
+                            className="bg-red-700 text-white font-bold px-1 py-1 rounded hover:bg-red-600 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors text-xs w-8"
+                          >
+                            ✕
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        )}
+      )}
 
-        {/* Orders Log */}
-        {completedOrders.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-lg font-bold mb-2 text-gray-300 text-center">Orders Log</h3>
-            <div className="bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-xs overflow-x-auto">
+      {/* Orders Log */}
+      {completedOrders.length > 0 && (
+        <div className="p-4">
+          <h3 className="text-lg font-bold mb-2 text-gray-300 text-center">Orders Log</h3>
+          <div className="bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-xs overflow-x-auto">
               {completedOrders.map((order) => (
                 <div key={order.id} className="mb-3 pb-3 border-b border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
                   <div className="flex justify-between items-start">
@@ -456,10 +459,9 @@ export default function BaristaPage() {
                   </div>
                 </div>
               ))}
-            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
