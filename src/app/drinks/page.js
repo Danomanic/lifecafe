@@ -25,12 +25,12 @@ export default function Drinks() {
     <div className="">
       <Navbar />
 
-      <main className="flex-grow p-4">
+      <main className="flex-grow">
         {/* Display drinks grouped by category */}
         {Object.keys(drinksByCategory).map((categoryTitle) => (
-          <div key={categoryTitle} className="mb-6">
-            <h2 className="text-xl font-bold mb-3 text-gray-900 bg-amber-100 p-2 rounded-lg">{categoryTitle}</h2>
-            <div className="grid grid-cols-2 gap-3">
+          <div key={categoryTitle} className="mb-4">
+            <h2 className="text-xl font-bold mb-2 text-gray-900 bg-amber-100 p-2">{categoryTitle}</h2>
+            <div className="grid grid-cols-2 gap-3 px-4">
               {drinksByCategory[categoryTitle].map((item, index) => (
                 <ItemButton
                   key={item.slug}
