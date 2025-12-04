@@ -416,7 +416,7 @@ export default function BaristaPage() {
                               disabled={sendingOrderId === order.id}
                               className="flex-1 bg-blue-700 text-white font-bold px-2 py-1 rounded hover:bg-blue-600 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors text-xs opacity-100"
                             >
-                              {sendingOrderId === order.id ? 'Sending...' : 'Sent to Table'}
+                              {sendingOrderId === order.id ? 'Sending...' : 'Send to Table'}
                             </button>
                           ) : (
                             <>
