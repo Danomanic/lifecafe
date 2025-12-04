@@ -286,7 +286,13 @@
             "size": [
               {"value": "regular", "price": 2.00},
               {"value": "large", "price": 2.50}
-            ]
+            ],
+            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"],
+            "milk-temp": ["cold", "hot"]
+          },
+          "collapsibleOptions": {
+            "milk": "semi-skimmed",
+            "milk-temp": "hot"
           }
         },
         {
@@ -320,7 +326,8 @@
               {"value": "gingerbread", "price": 0.50},
               {"value": "ameretto", "price": 0.50}
             ]
-          }
+          },
+          "extras": ["syrup"]
         },
         {
           "name": "Expresso",
