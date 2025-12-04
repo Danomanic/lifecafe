@@ -12,6 +12,15 @@ export default function BaristaPage() {
   const [reorderingOrderId, setReorderingOrderId] = useState(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
 
+  // Check if a date is today
+  const isToday = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+           date.getMonth() === today.getMonth() &&
+           date.getFullYear() === today.getFullYear();
+  };
+
   // Fetch pending orders
   const fetchOrders = async (isInitial = false) => {
     try {
@@ -22,7 +31,9 @@ export default function BaristaPage() {
       }
 
       const data = await response.json();
-      setOrders(data);
+      // Filter to only today's orders
+      const todaysOrders = data.filter(order => isToday(order.createdAt));
+      setOrders(todaysOrders);
       setError(null);
     } catch (err) {
       console.error('Error fetching orders:', err);
@@ -51,8 +62,11 @@ export default function BaristaPage() {
       const cancelled = await cancelledRes.json();
       const allOrders = [...completed, ...cancelled];
 
+      // Filter to only today's orders
+      const todaysOrders = allOrders.filter(order => isToday(order.updatedAt || order.createdAt));
+
       // Sort by most recently updated first
-      const sortedData = allOrders.sort((a, b) =>
+      const sortedData = todaysOrders.sort((a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
       setCompletedOrders(sortedData.slice(0, 50)); // Keep last 50
@@ -97,6 +111,20 @@ export default function BaristaPage() {
       return `${minutes}m`;
     } else {
       return 'Just now';
+    }
+  };
+
+  // Get color class for elapsed time based on age
+  const getElapsedTimeClass = (createdAt) => {
+    const elapsed = currentTime - new Date(createdAt).getTime();
+    const minutes = Math.floor(elapsed / 60000);
+
+    if (minutes >= 10) {
+      return 'text-red-500 font-bold animate-pulse'; // Flash red
+    } else if (minutes >= 5) {
+      return 'text-amber-500 font-bold'; // Solid amber
+    } else {
+      return 'text-green-500 font-bold'; // Green
     }
   };
 
@@ -207,8 +235,9 @@ export default function BaristaPage() {
         throw new Error('Failed to reorder');
       }
 
-      // Refresh orders
-      fetchOrders();
+      // Refresh orders immediately to show the new order
+      await fetchOrders();
+      await fetchCompletedOrders();
     } catch (err) {
       console.error('Error reordering:', err);
       alert('Failed to reorder: ' + err.message);
@@ -316,7 +345,7 @@ export default function BaristaPage() {
                                     <span className="text-base font-bold text-gray-300">x{item.quantity}</span>
                                   )}
                                   {index === 0 && (
-                                    <span className="text-base font-bold text-orange-400">{getElapsedTime(order.createdAt)}</span>
+                                    <span className={`text-base ${getElapsedTimeClass(order.createdAt)}`}>{getElapsedTime(order.createdAt)}</span>
                                   )}
                                 </div>
                               </div>

@@ -42,6 +42,15 @@ export default function OrdersPage() {
     };
   }, []);
 
+  // Check if a date is today
+  const isToday = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+           date.getMonth() === today.getMonth() &&
+           date.getFullYear() === today.getFullYear();
+  };
+
   // Fetch orders for the current table
   const fetchOrders = async (tableNum) => {
     try {
@@ -53,8 +62,10 @@ export default function OrdersPage() {
       }
 
       const data = await response.json();
+      // Filter to only today's orders
+      const todaysOrders = data.filter(order => isToday(order.createdAt));
       // Sort by created date, newest first
-      const sortedOrders = data.sort((a, b) =>
+      const sortedOrders = todaysOrders.sort((a, b) =>
         new Date(b.createdAt) - new Date(a.createdAt)
       );
       setOrders(sortedOrders);

@@ -42,7 +42,7 @@ export default function Modal() {
               <h2 className='text-xl font-bold text-center text-gray-900'>Select Table</h2>
             </div>
             <div className='grid grid-cols-3 gap-2 p-3'>
-              {[...Array(14)].map((_, i) => (
+              {[...Array(12)].map((_, i) => (
                 <button
                   key={i}
                   className='bg-slate-900 text-white py-5 px-4 rounded-lg hover:bg-blue-700 font-bold text-xl'
