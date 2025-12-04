@@ -21,15 +21,4 @@ module.exports = {
     'hover:bg-brand-yellow',
     'hover:bg-brand-pink',
   ],
-  theme: {
-    extend: {
-      colors: {
-        'brand-teal': '#00bfb2',      // Primary button color
-        'brand-navy': '#003b49',      // Dark backgrounds
-        'brand-yellow': '#ffc845',    // Accents
-        'brand-pink': '#e56db1',      // Secondary accents
-      }
-    },
-  },
-  plugins: [],
 };
