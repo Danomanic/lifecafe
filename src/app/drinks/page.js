@@ -5,11 +5,17 @@ import Navbar from '../navbar';
 export default function Drinks() {
   const drinks = menuData.drinks;
 
-  // Group drinks by category
+  // Group drinks by category and sort by position
   const drinksByCategory = {};
   Object.keys(drinks).forEach((key) => {
     if (key !== 'title' && drinks[key].items) {
-      drinksByCategory[drinks[key].title] = drinks[key].items;
+      // Sort items by position (items without position go to the end)
+      const sortedItems = [...drinks[key].items].sort((a, b) => {
+        const posA = a.position ?? 999;
+        const posB = b.position ?? 999;
+        return posA - posB;
+      });
+      drinksByCategory[drinks[key].title] = sortedItems;
     }
   });
 
