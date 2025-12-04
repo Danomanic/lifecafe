@@ -40,36 +40,35 @@ export default function ItemPage({ params }) {
   useEffect(() => {
     if (!slug) return;
 
+    // Generic search function that recursively searches through all menu sections
+    const findItemBySlug = (obj) => {
+      // If this object has an items array, search it
+      if (obj && Array.isArray(obj.items)) {
+        const found = obj.items.find(item => item.slug === slug);
+        if (found) return found;
+      }
+
+      // If this is an object, recursively search its properties
+      if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        for (const key of Object.keys(obj)) {
+          // Skip title and other non-category fields
+          if (key === 'title' || key === 'description' || key === 'name' || key === 'price') {
+            continue;
+          }
+
+          const found = findItemBySlug(obj[key]);
+          if (found) return found;
+        }
+      }
+
+      return null;
+    };
+
+    // Search through all sections in menuData
     let foundItem = null;
-
-    // Search through drinks
-    const drinks = menuData.drinks;
-    Object.keys(drinks).forEach((categoryKey) => {
-      if (categoryKey !== 'title' && drinks[categoryKey].items) {
-        const found = drinks[categoryKey].items.find(i => i.slug === slug);
-        if (found) {
-          foundItem = found;
-        }
-      }
-    });
-
-    // If not found in drinks, search through cakes
-    if (!foundItem) {
-      // Search cakesAndSnacks
-      if (menuData.cakesAndSnacks && menuData.cakesAndSnacks.items) {
-        const found = menuData.cakesAndSnacks.items.find(i => i.slug === slug);
-        if (found) {
-          foundItem = found;
-        }
-      }
-
-      // Search glutenFreeCakes
-      if (!foundItem && menuData.glutenFreeCakes && menuData.glutenFreeCakes.items) {
-        const found = menuData.glutenFreeCakes.items.find(i => i.slug === slug);
-        if (found) {
-          foundItem = found;
-        }
-      }
+    for (const sectionKey of Object.keys(menuData)) {
+      foundItem = findItemBySlug(menuData[sectionKey]);
+      if (foundItem) break;
     }
 
     setItem(foundItem);
