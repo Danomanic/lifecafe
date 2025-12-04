@@ -29,7 +29,7 @@ export default function Drinks() {
         {/* Display drinks grouped by category */}
         {Object.keys(drinksByCategory).map((categoryTitle) => (
           <div key={categoryTitle} className="mb-4">
-            <h2 className="text-xl font-bold mb-2 text-gray-900 bg-amber-100 p-2 text-center">{categoryTitle}</h2>
+            <h2 className="text-xl font-bold mb-2 text-black bg-brand-yellow p-2 text-center">{categoryTitle}</h2>
             <div className="grid grid-cols-2 gap-1 px-1">
               {drinksByCategory[categoryTitle].map((item, index) => (
                 <ItemButton

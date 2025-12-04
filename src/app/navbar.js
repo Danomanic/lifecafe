@@ -30,21 +30,21 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-red-100">
+    <nav className="bg-white">
       <div>
         <div className="grid grid-cols-2">
           {cartCount === 0 ? (
             <Modal />
           ) : (
-            <Link className="px-4 py-3 block w-full text-center text-white bg-purple-900 active:text-violet-500 hover:bg-purple-800 focus:outline-none focus:ring text-xl font-bold relative animate-pulse"
+            <Link className="px-4 py-3 block w-full text-center text-white bg-brand-teal hover:opacity-90 focus:outline-none focus:ring text-xl font-bold relative animate-pulse"
               href="/cart">
               Cart
-              <span className="absolute top-2 right-2 bg-red-600 text-white text-lg font-bold rounded-full h-8 w-8 flex items-center justify-center">
+              <span className="absolute top-2 right-2 bg-brand-pink text-white text-lg font-bold rounded-full h-8 w-8 flex items-center justify-center">
                 {cartCount}
               </span>
             </Link>
           )}
-          <Link className="px-4 py-3 block w-full text-center text-white bg-blue-900 active:text-violet-500 hover:bg-blue-800 focus:outline-none focus:ring text-xl font-bold"
+          <Link className="px-4 py-3 block w-full text-center text-white bg-brand-navy hover:opacity-90 focus:outline-none focus:ring text-xl font-bold"
             href="/">
             Menu
           </Link>

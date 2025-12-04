@@ -225,13 +225,13 @@ export default function ItemPage({ params }) {
         )}
 
         {!tableNumber && (
-          <div className="bg-yellow-100 border border-yellow-500 text-yellow-900 px-4 py-2 rounded-lg mb-4 text-base font-semibold">
+          <div className="bg-brand-yellow border-2 border-black text-black px-4 py-2 rounded-lg mb-4 text-base font-semibold">
             Please select a table number first
           </div>
         )}
 
         {submitError && (
-          <div className="bg-red-100 border border-red-500 text-red-900 px-4 py-2 rounded-lg mb-4 text-base font-semibold">
+          <div className="bg-brand-pink border-2 border-black text-white px-4 py-2 rounded-lg mb-4 text-base font-semibold">
             {submitError}
           </div>
         )}
@@ -254,7 +254,7 @@ export default function ItemPage({ params }) {
 
             return (
               <fieldset key={optionKey} id={optionKey} className="mb-6">
-                <p className="font-bold mb-2 text-xl text-gray-900">{capitalizedLabel}</p>
+                <p className="font-bold mb-2 text-xl text-black">{capitalizedLabel}</p>
                 {options.map((option, index) => {
                   const optionValue = typeof option === 'object' ? option.value : option;
                   const optionLabel = typeof option === 'object'
@@ -263,7 +263,7 @@ export default function ItemPage({ params }) {
                   const optionPrice = typeof option === 'object' && option.price && option.price > 0 ? option.price : null;
 
                   return (
-                    <label key={optionValue} className="flex items-center justify-between bg-gray-100 rounded-lg px-3 py-3 my-2 hover:bg-indigo-200 cursor-pointer border border-gray-300">
+                    <label key={optionValue} className="flex items-center justify-between bg-white rounded-lg px-3 py-3 my-2 hover:bg-brand-yellow cursor-pointer border-2 border-black">
                       <div className="flex items-center">
                         <input
                           type="radio"
@@ -273,10 +273,10 @@ export default function ItemPage({ params }) {
                           onChange={(e) => handleOptionChange(optionKey, e.target.value)}
                           className="w-5 h-5"
                         />
-                        <p className="pl-3 text-base font-semibold text-gray-900">{optionLabel}</p>
+                        <p className="pl-3 text-base font-semibold text-black">{optionLabel}</p>
                       </div>
                       {optionPrice && (
-                        <p className="text-sm font-semibold text-gray-600">£{optionPrice.toFixed(2)}</p>
+                        <p className="text-sm font-semibold text-black">£{optionPrice.toFixed(2)}</p>
                       )}
                     </label>
                   );
@@ -320,17 +320,17 @@ export default function ItemPage({ params }) {
                       <button
                         type="button"
                         onClick={() => toggleOptionExpanded(optionKey)}
-                        className="w-full flex items-center justify-between bg-blue-100 rounded-lg px-4 py-3 border border-blue-300 hover:bg-blue-200 transition-colors"
+                        className="w-full flex items-center justify-between bg-white rounded-lg px-4 py-3 border-2 border-black hover:bg-brand-yellow transition-colors"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-base text-gray-600">{capitalizedLabel}:</span>
-                          <span className="font-bold text-lg text-gray-900">{currentLabel}</span>
+                          <span className="font-semibold text-base text-black">{capitalizedLabel}:</span>
+                          <span className="font-bold text-lg text-black">{currentLabel}</span>
                         </div>
-                        <span className="text-2xl text-gray-700">{isExpanded ? '−' : '+'}</span>
+                        <span className="text-2xl text-black">{isExpanded ? '−' : '+'}</span>
                       </button>
 
                       {isExpanded && (
-                        <div className="mt-2 border border-gray-300 rounded-lg p-3 bg-gray-50">
+                        <div className="mt-2 border-2 border-black rounded-lg p-3 bg-white">
                           {options.map((option, index) => {
                             const optionValue = typeof option === 'object' ? option.value : option;
                             const optionLabel = typeof option === 'object'
@@ -339,7 +339,7 @@ export default function ItemPage({ params }) {
                             const optionPrice = typeof option === 'object' && option.price ? option.price : null;
 
                             return (
-                              <label key={optionValue} className="flex items-center justify-between bg-white rounded-lg px-3 py-2 my-1.5 hover:bg-indigo-100 cursor-pointer border border-gray-200">
+                              <label key={optionValue} className="flex items-center justify-between bg-white rounded-lg px-3 py-2 my-1.5 hover:bg-brand-yellow cursor-pointer border border-black">
                                 <div className="flex items-center">
                                   <input
                                     type="radio"
@@ -349,10 +349,10 @@ export default function ItemPage({ params }) {
                                     onChange={(e) => handleOptionChange(optionKey, e.target.value)}
                                     className="w-5 h-5"
                                   />
-                                  <p className="pl-3 text-base font-semibold text-gray-900">{optionLabel}</p>
+                                  <p className="pl-3 text-base font-semibold text-black">{optionLabel}</p>
                                 </div>
                                 {optionPrice && optionPrice > 0 && (
-                                  <p className="text-sm font-semibold text-gray-600">+£{optionPrice.toFixed(2)}</p>
+                                  <p className="text-sm font-semibold text-black">+£{optionPrice.toFixed(2)}</p>
                                 )}
                               </label>
                             );
@@ -371,15 +371,15 @@ export default function ItemPage({ params }) {
             disabled={isSubmitting || !tableNumber || addedToCart}
             className={`w-full font-bold py-3 px-4 rounded-lg transition-colors text-xl ${
               addedToCart
-                ? 'bg-green-600 text-white'
-                : 'bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed'
+                ? 'bg-brand-pink text-white'
+                : 'bg-brand-teal text-white hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed'
             }`}
           >
             {addedToCart ? '✓ Added!' : isSubmitting ? 'Adding to Order...' : 'Add to Order'}
           </button>
 
           {price && (
-            <p className="text-center text-gray-600 mt-2 text-base font-semibold">£{price.toFixed(2)}</p>
+            <p className="text-center text-black mt-2 text-base font-semibold">£{price.toFixed(2)}</p>
           )}
         </form>
       </div>
