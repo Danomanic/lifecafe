@@ -151,9 +151,9 @@ export default function CartPage() {
                   <div className="p-2.5">
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex-1">
-                        <p className="font-bold text-sm text-black">{item.name}</p>
+                        <p className="font-bold text-base text-black">{item.name}</p>
                         {item.options && Object.keys(item.options).length > 0 && (
-                          <ul className="text-xs mt-1 ml-4 list-disc">
+                          <ul className="text-sm mt-1 ml-4 list-disc">
                             {Object.entries(item.options).map(([key, value]) => (
                               <li key={key} className="text-black">
                                 <span className="font-normal">{key}: </span>
