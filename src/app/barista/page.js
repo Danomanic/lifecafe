@@ -9,6 +9,7 @@ export default function BaristaPage() {
   const [error, setError] = useState(null);
   const [completingOrderId, setCompletingOrderId] = useState(null);
   const [cancellingOrderId, setCancellingOrderId] = useState(null);
+  const [sendingOrderId, setSendingOrderId] = useState(null);
   const [reorderingOrderId, setReorderingOrderId] = useState(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
 
@@ -21,18 +22,25 @@ export default function BaristaPage() {
            date.getFullYear() === today.getFullYear();
   };
 
-  // Fetch pending orders
+  // Fetch pending and ready orders
   const fetchOrders = async (isInitial = false) => {
     try {
-      const response = await fetch('/api/orders?status=pending');
+      // Fetch both pending and ready orders
+      const [pendingRes, readyRes] = await Promise.all([
+        fetch('/api/orders?status=pending'),
+        fetch('/api/orders?status=ready')
+      ]);
 
-      if (!response.ok) {
+      if (!pendingRes.ok || !readyRes.ok) {
         throw new Error('Failed to fetch orders');
       }
 
-      const data = await response.json();
+      const pending = await pendingRes.json();
+      const ready = await readyRes.json();
+      const allOrders = [...pending, ...ready];
+
       // Filter to only today's orders
-      const todaysOrders = data.filter(order => isToday(order.createdAt));
+      const todaysOrders = allOrders.filter(order => isToday(order.createdAt));
       setOrders(todaysOrders);
       setError(null);
     } catch (err) {
@@ -128,10 +136,37 @@ export default function BaristaPage() {
     }
   };
 
-  // Mark order as complete
+  // Mark order as ready
   const handleCompleteOrder = async (orderId) => {
     try {
       setCompletingOrderId(orderId);
+
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'ready' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to mark order as ready');
+      }
+
+      // Refresh orders to show updated status
+      await fetchOrders();
+    } catch (err) {
+      console.error('Error marking order as ready:', err);
+      alert('Failed to mark order as ready: ' + err.message);
+    } finally {
+      setCompletingOrderId(null);
+    }
+  };
+
+  // Send order to table (mark as completed)
+  const handleSendToTable = async (orderId) => {
+    try {
+      setSendingOrderId(orderId);
 
       const response = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
@@ -142,18 +177,18 @@ export default function BaristaPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to complete order');
+        throw new Error('Failed to send order to table');
       }
 
-      // Remove completed order from the list
+      // Remove from active orders list
       setOrders(orders.filter(order => order.id !== orderId));
       // Refresh completed orders
       fetchCompletedOrders();
     } catch (err) {
-      console.error('Error completing order:', err);
-      alert('Failed to complete order: ' + err.message);
+      console.error('Error sending order to table:', err);
+      alert('Failed to send order to table: ' + err.message);
     } finally {
-      setCompletingOrderId(null);
+      setSendingOrderId(null);
     }
   };
 
@@ -319,7 +354,7 @@ export default function BaristaPage() {
 
                   <div className="divide-y divide-gray-800 overflow-y-auto flex-1">
                     {ordersByTable[tableNum].map((order) => (
-                      <div key={order.id} className="p-2">
+                      <div key={order.id} className={`p-2 ${order.status === 'ready' ? 'opacity-50' : ''}`}>
                         <div className="space-y-2">
                           {order.items.map((item, index) => {
                             // Get options - they're stored as objects in MongoDB
@@ -375,20 +410,32 @@ export default function BaristaPage() {
                         </div>
 
                         <div className="flex gap-1 mt-1.5">
-                          <button
-                            onClick={() => handleCompleteOrder(order.id)}
-                            disabled={completingOrderId === order.id || cancellingOrderId === order.id}
-                            className="flex-1 bg-green-700 text-white font-bold px-2 py-1 rounded hover:bg-green-600 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors text-xs"
-                          >
-                            {completingOrderId === order.id ? 'Marking...' : 'Mark as Ready'}
-                          </button>
-                          <button
-                            onClick={() => handleCancelOrder(order.id)}
-                            disabled={completingOrderId === order.id || cancellingOrderId === order.id}
-                            className="bg-red-700 text-white font-bold px-1 py-1 rounded hover:bg-red-600 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors text-xs w-8"
-                          >
-                            ✕
-                          </button>
+                          {order.status === 'ready' ? (
+                            <button
+                              onClick={() => handleSendToTable(order.id)}
+                              disabled={sendingOrderId === order.id}
+                              className="flex-1 bg-blue-700 text-white font-bold px-2 py-1 rounded hover:bg-blue-600 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors text-xs"
+                            >
+                              {sendingOrderId === order.id ? 'Sending...' : 'Sent to Table'}
+                            </button>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleCompleteOrder(order.id)}
+                                disabled={completingOrderId === order.id || cancellingOrderId === order.id}
+                                className="flex-1 bg-green-700 text-white font-bold px-2 py-1 rounded hover:bg-green-600 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors text-xs"
+                              >
+                                {completingOrderId === order.id ? 'Marking...' : 'Mark as Ready'}
+                              </button>
+                              <button
+                                onClick={() => handleCancelOrder(order.id)}
+                                disabled={completingOrderId === order.id || cancellingOrderId === order.id}
+                                className="bg-red-700 text-white font-bold px-1 py-1 rounded hover:bg-red-600 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors text-xs w-8"
+                              >
+                                ✕
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
