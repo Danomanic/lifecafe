@@ -218,11 +218,12 @@ export default function ItemPage({ params }) {
       <Navbar />
 
       <div className="mx-4 mt-4">
-        <h1 className="text-2xl font-bold mb-4">{item.name}</h1>
-
-        {item.description && (
-          <p className="text-gray-700 mb-4 text-base">{item.description}</p>
-        )}
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">{item.name}</h1>
+          {price && (
+            <p className="text-2xl font-bold text-black">£{price.toFixed(2)}</p>
+          )}
+        </div>
 
         {!tableNumber && (
           <div className="bg-brand-yellow border-2 border-black text-black px-4 py-2 rounded-lg mb-4 text-base font-semibold">
@@ -377,10 +378,6 @@ export default function ItemPage({ params }) {
           >
             {addedToCart ? '✓ Added!' : isSubmitting ? 'Adding to Order...' : 'Add to Order'}
           </button>
-
-          {price && (
-            <p className="text-center text-black mt-2 text-base font-semibold">£{price.toFixed(2)}</p>
-          )}
         </form>
       </div>
     </div>
