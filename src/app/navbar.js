@@ -36,7 +36,7 @@ export default function Navbar() {
           {cartCount === 0 ? (
             <Modal />
           ) : (
-            <Link className="px-4 py-3 block w-full text-center text-white bg-purple-900 active:text-violet-500 hover:bg-purple-800 focus:outline-none focus:ring text-xl font-bold relative"
+            <Link className="px-4 py-3 block w-full text-center text-white bg-purple-900 active:text-violet-500 hover:bg-purple-800 focus:outline-none focus:ring text-xl font-bold relative animate-pulse"
               href="/cart">
               Cart
               <span className="absolute top-1 right-1 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
