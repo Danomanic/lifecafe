@@ -327,7 +327,9 @@
               {"value": "ameretto", "price": 0.50}
             ]
           },
-          "extras": ["syrup"]
+          "collapsibleOptions": {
+            "syrup": "none"
+          }
         },
         {
           "name": "Expresso",
@@ -376,7 +378,10 @@
               {"value": "pot", "price": 2.50},
               {"value": "pot-for-Two", "price": 2.50}
             ],
-            "milk": ["semi-skimmed", "oat", "almond", "soya"]
+            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"]
+          },
+          "collapsibleOptions": {
+            "milk": "semi-skimmed"
           }
         },
         {
@@ -389,7 +394,10 @@
               {"value": "pot", "price": 2.50},
               {"value": "pot-for-Two", "price": 2.50}
             ],
-            "milk": ["semi-skimmed", "oat", "almond", "soya"]
+            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"]
+          },
+          "collapsibleOptions": {
+            "milk": "semi-skimmed"
           }
         },
         {
@@ -402,7 +410,10 @@
               {"value": "pot", "price": 2.50},
               {"value": "pot-for-Two", "price": 2.50}
             ],
-            "milk": ["semi-skimmed", "oat", "almond", "soya"]
+            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"]
+          },
+          "collapsibleOptions": {
+            "milk": "semi-skimmed"
           }
         }
       ]
@@ -411,21 +422,20 @@
       "title": "Hot Chocolate",
       "items": [
         {
-          "name": "Divine Hot Chocolate",
-          "slug": "divine-hot-chocolate",
+          "name": "Hot Chocolate",
+          "slug": "hot-chocolate",
           "price": 2.50
-        },
-        {
-          "name": "Little Cherubs Hot Chocolate",
-          "slug": "little-cherubs-hot-chocolate",
-          "description": "Kids size",
-          "price": 1.40
         },
         {
           "name": "Chocolate Royale",
           "slug": "chocolate-royale",
           "description": "With flake & mini marshmallows",
           "price": 3.00
+        },
+        {
+          "name": "Kids Hot Chocolate",
+          "slug": "kids-hot-chocolate",
+          "price": 1.40
         }
       ]
     },
