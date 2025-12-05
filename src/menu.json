@@ -308,6 +308,10 @@
           "name": "Cappuccino",
           "slug": "cappuccino",
           "options": {
+            "type": [
+              {"value": "caffine", "price": 0.00},
+              {"value": "decaff", "price": 0.00}
+            ],
             "size": [
               {"value": "regular", "price": 2.60},
               {"value": "large", "price": 3.00}
@@ -320,6 +324,10 @@
           "slug": "americano",
           "description": "Black Coffee",
           "options": {
+            "type": [
+              {"value": "caffine", "price": 0.00},
+              {"value": "decaff", "price": 0.00}
+            ],
             "size": [
               {"value": "regular", "price": 2.00},
               {"value": "large", "price": 2.50}
@@ -336,6 +344,10 @@
           "name": "Cafetiere",
           "slug": "cafetiere",
           "options": {
+            "type": [
+              {"value": "caffine", "price": 0.00},
+              {"value": "decaff", "price": 0.00}
+            ],
             "size": [
               {"value": "regular", "price": 2.50},
               {"value": "large", "price": 4.50}
@@ -371,18 +383,32 @@
         {
           "name": "Expresso",
           "slug": "expresso",
-          "price": 2.00
+          "options": {
+            "type": [
+              {"value": "caffine", "price": 2.00},
+              {"value": "decaff", "price": 2.00}
+            ]
+          }
         },
         {
           "name": "Macchiato",
           "slug": "macchiato",
-          "price": 2.50
+          "options": {
+            "type": [
+              {"value": "caffine", "price": 2.50},
+              {"value": "decaff", "price": 2.50}
+            ]
+          }
         },
         {
           "position": 4,
           "name": "Flat White",
           "slug": "flat-white",
           "options": {
+            "type": [
+              {"value": "caffine", "price": 0.00},
+              {"value": "decaff", "price": 0.00}
+            ],
             "shots": [
               {"value": "regular", "price": 2.70},
               {"value": "large", "price": 3.00}
@@ -392,13 +418,23 @@
         {
           "name": "Cortado",
           "slug": "cortado",
-          "price": 2.70
+          "options": {
+            "type": [
+              {"value": "caffine", "price": 2.70},
+              {"value": "decaff", "price": 2.70}
+            ]
+          }
         },
         {
           "position": 5,
           "name": "Mocha",
           "slug": "mocha",
-          "price": 3.00
+          "options": {
+            "type": [
+              {"value": "caffine", "price": 3.00},
+              {"value": "decaff", "price": 3.00}
+            ]
+          }
         }
       ]
     },
@@ -410,22 +446,10 @@
           "slug": "english-tea",
           "price": 1.00,
           "options": {
-            "size": [
-              {"value": "cup", "price": 1.00},
-              {"value": "pot", "price": 2.50},
-              {"value": "pot-for-Two", "price": 2.50}
+            "type": [
+              {"value": "caffine", "price": 0.00},
+              {"value": "decaff", "price": 0.00}
             ],
-            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"]
-          },
-          "collapsibleOptions": {
-            "milk": "semi-skimmed"
-          }
-        },
-        {
-          "name": "Decaf Tea",
-          "slug": "decaf-tea",
-          "price": 1.00,
-          "options": {
             "size": [
               {"value": "cup", "price": 1.00},
               {"value": "pot", "price": 2.50},
@@ -442,6 +466,10 @@
           "slug": "earl-tea",
           "price": 1.00,
           "options": {
+            "type": [
+              {"value": "caffine", "price": 0.00},
+              {"value": "decaff", "price": 0.00}
+            ],
             "size": [
               {"value": "cup", "price": 1.00},
               {"value": "pot", "price": 2.50},
