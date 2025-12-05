@@ -315,7 +315,13 @@
             "size": [
               {"value": "regular", "price": 2.60},
               {"value": "large", "price": 3.00}
-            ]
+            ],
+            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"],
+            "milk-temp": ["cold", "hot"]
+          },
+          "collapsibleOptions": {
+            "milk": "semi-skimmed",
+            "milk-temp": "hot"
           }
         },
         {
@@ -351,7 +357,13 @@
             "size": [
               {"value": "regular", "price": 2.50},
               {"value": "large", "price": 4.50}
-            ]
+            ],
+            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"],
+            "milk-temp": ["cold", "hot"]
+          },
+          "collapsibleOptions": {
+            "milk": "semi-skimmed",
+            "milk-temp": "hot"
           }
         },
         {
@@ -367,6 +379,8 @@
               {"value": "single", "price": 2.60},
               {"value": "double", "price": 3.00}
             ],
+            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"],
+            "milk-temp": ["cold", "hot"],
             "syrup": [
               {"value": "none", "price": 0.00},
               {"value": "vanilla", "price": 0.50},
@@ -377,6 +391,8 @@
             ]
           },
           "collapsibleOptions": {
+            "milk": "semi-skimmed",
+            "milk-temp": "hot",
             "syrup": "none"
           }
         },
@@ -387,7 +403,13 @@
             "type": [
               {"value": "caffine", "price": 2.00},
               {"value": "decaff", "price": 2.00}
-            ]
+            ],
+            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"],
+            "milk-temp": ["cold", "hot"]
+          },
+          "collapsibleOptions": {
+            "milk": "semi-skimmed",
+            "milk-temp": "hot"
           }
         },
         {
@@ -397,7 +419,13 @@
             "type": [
               {"value": "caffine", "price": 2.50},
               {"value": "decaff", "price": 2.50}
-            ]
+            ],
+            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"],
+            "milk-temp": ["cold", "hot"]
+          },
+          "collapsibleOptions": {
+            "milk": "semi-skimmed",
+            "milk-temp": "hot"
           }
         },
         {
@@ -412,7 +440,13 @@
             "shots": [
               {"value": "regular", "price": 2.70},
               {"value": "large", "price": 3.00}
-            ]
+            ],
+            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"],
+            "milk-temp": ["cold", "hot"]
+          },
+          "collapsibleOptions": {
+            "milk": "semi-skimmed",
+            "milk-temp": "hot"
           }
         },
         {
@@ -422,7 +456,13 @@
             "type": [
               {"value": "caffine", "price": 2.70},
               {"value": "decaff", "price": 2.70}
-            ]
+            ],
+            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"],
+            "milk-temp": ["cold", "hot"]
+          },
+          "collapsibleOptions": {
+            "milk": "semi-skimmed",
+            "milk-temp": "hot"
           }
         },
         {
@@ -433,7 +473,13 @@
             "type": [
               {"value": "caffine", "price": 3.00},
               {"value": "decaff", "price": 3.00}
-            ]
+            ],
+            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"],
+            "milk-temp": ["cold", "hot"]
+          },
+          "collapsibleOptions": {
+            "milk": "semi-skimmed",
+            "milk-temp": "hot"
           }
         }
       ]
@@ -475,10 +521,12 @@
               {"value": "pot", "price": 2.50},
               {"value": "pot-for-Two", "price": 2.50}
             ],
-            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"]
+            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"],
+            "lemon": ["no", "yes"]
           },
           "collapsibleOptions": {
-            "milk": "semi-skimmed"
+            "milk": "semi-skimmed",
+            "lemon": "no"
           }
         }
       ]
