@@ -338,11 +338,11 @@
               {"value": "regular", "price": 2.00},
               {"value": "large", "price": 2.50}
             ],
-            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"],
+            "milk": ["no milk", "semi-skimmed", "skimmed", "oat", "almond", "soya"],
             "milk-temp": ["cold", "hot"]
           },
           "collapsibleOptions": {
-            "milk": "semi-skimmed",
+            "milk": "no milk",
             "milk-temp": "hot"
           }
         },
@@ -404,11 +404,11 @@
               {"value": "caffine", "price": 2.00},
               {"value": "decaff", "price": 2.00}
             ],
-            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"],
+            "milk": ["no milk", "semi-skimmed", "skimmed", "oat", "almond", "soya"],
             "milk-temp": ["cold", "hot"]
           },
           "collapsibleOptions": {
-            "milk": "semi-skimmed",
+            "milk": "no milk",
             "milk-temp": "hot"
           }
         },
@@ -501,10 +501,10 @@
               {"value": "pot", "price": 2.50},
               {"value": "pot-for-Two", "price": 2.50}
             ],
-            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"]
+            "milk": ["no milk", "semi-skimmed", "skimmed", "oat", "almond", "soya"]
           },
           "collapsibleOptions": {
-            "milk": "semi-skimmed"
+            "milk": "no milk"
           }
         },
         {
@@ -521,11 +521,11 @@
               {"value": "pot", "price": 2.50},
               {"value": "pot-for-Two", "price": 2.50}
             ],
-            "milk": ["semi-skimmed", "skimmed", "oat", "almond", "soya"],
+            "milk": ["no milk", "semi-skimmed", "skimmed", "oat", "almond", "soya"],
             "lemon": ["no", "yes"]
           },
           "collapsibleOptions": {
-            "milk": "semi-skimmed",
+            "milk": "no milk",
             "lemon": "no"
           }
         }
@@ -559,7 +559,11 @@
           "name": "Chilled Drinks",
           "slug": "chilled-drinks",
           "options": {
-            "type": ["Coke", "Fresh Orange", "Apple Juice"]
+            "type": ["Coke", "Diet Coke", "Fresh Orange", "Apple Juice"],
+            "extras": ["no", "ice", "lemon", "ice and lemon"]
+          },
+          "collapsibleOptions": {
+            "extras": "no"
           },
           "price": 1.50
         },
@@ -567,7 +571,11 @@
           "name": "Water",
           "slug": "water",
           "options": {
-            "type": ["still", "sparkling"]
+            "type": ["still", "sparkling"],
+            "extras": ["no", "ice", "lemon", "ice and lemon"]
+          },
+          "collapsibleOptions": {
+            "extras": "no"
           },
           "price": 1.50
         },
@@ -575,7 +583,11 @@
           "name": "Fruit Presse",
           "slug": "fruit-presse",
           "options": {
-            "flavour": ["Elderflower", "Raspberry Lemonade", "Ginger Beer"]
+            "flavour": ["Elderflower", "Raspberry Lemonade", "Ginger Beer"],
+            "extras": ["no", "ice", "lemon", "ice and lemon"]
+          },
+          "collapsibleOptions": {
+            "extras": "no"
           },
           "price": 2.00
         },
@@ -583,13 +595,23 @@
           "name": "Fruit Shoot",
           "slug": "fruit-shoot",
           "options": {
-            "flavour": ["Orange", "Blackcurrent"]
+            "flavour": ["Orange", "Blackcurrent"],
+            "extras": ["no", "ice", "lemon", "ice and lemon"]
+          },
+          "collapsibleOptions": {
+            "extras": "no"
           },
           "price": 1.40
         },
         {
           "name": "Juice",
           "slug": "juice",
+          "options": {
+            "extras": ["no", "ice", "lemon", "ice and lemon"]
+          },
+          "collapsibleOptions": {
+            "extras": "no"
+          },
           "price": 0.50
         }
       ]
