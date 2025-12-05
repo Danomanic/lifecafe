@@ -3,6 +3,53 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 
+// Simple Bar Chart Component for Preparation Times
+function BarChart({ data }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-48 text-gray-500 text-sm">
+        No data to display
+      </div>
+    );
+  }
+
+  const maxTime = Math.max(...data.map(item => item.time));
+  const maxHeight = 150; // px
+
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-end justify-around gap-2 h-[150px] mb-4">
+        {data.map((item, index) => {
+          const height = maxTime > 0 ? (item.time / maxTime) * maxHeight : 0;
+          const minutes = Math.floor(item.time / 60);
+          const seconds = item.time % 60;
+          const timeLabel = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+
+          return (
+            <div key={index} className="flex flex-col items-center flex-1 max-w-[60px]">
+              <div className="text-[10px] text-gray-400 font-mono mb-1">{timeLabel}</div>
+              <div
+                className="w-full rounded-t"
+                style={{
+                  height: `${height}px`,
+                  backgroundColor: item.color,
+                  minHeight: item.time > 0 ? '4px' : '0px'
+                }}
+              ></div>
+              <div className="text-[9px] text-gray-500 font-mono mt-1 text-center break-words w-full">
+                #{item.orderId.slice(-4)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="text-xs text-gray-400 font-mono text-center">
+        Order IDs (most recent {data.length})
+      </div>
+    </div>
+  );
+}
+
 // Simple Pie Chart Component
 function PieChart({ data }) {
   const total = data.reduce((sum, item) => sum + item.value, 0);
@@ -185,6 +232,37 @@ export default function DanminPage() {
       });
     }
 
+    // Calculate preparation times (time in pending status)
+    const preparationData = todaysOrders
+      .map(order => {
+        const createdAt = new Date(order.createdAt);
+        let endTime;
+
+        if (order.status === 'pending') {
+          // Still pending - calculate time from creation to now
+          endTime = new Date();
+        } else {
+          // Completed or cancelled - use updatedAt
+          endTime = new Date(order.updatedAt || order.createdAt);
+        }
+
+        const timeInSeconds = Math.floor((endTime - createdAt) / 1000);
+
+        // Color based on status
+        let color = '#fb923c'; // orange for pending
+        if (order.status === 'completed') color = '#22c55e'; // green
+        if (order.status === 'cancelled') color = '#ef4444'; // red
+
+        return {
+          orderId: order.id,
+          time: timeInSeconds,
+          status: order.status,
+          color
+        };
+      })
+      .sort((a, b) => new Date(todaysOrders.find(o => o.id === b.orderId).createdAt) - new Date(todaysOrders.find(o => o.id === a.orderId).createdAt))
+      .slice(0, 10); // Show most recent 10 orders
+
     return {
       totalOrders: todaysOrders.length,
       totalItemsCount,
@@ -197,7 +275,8 @@ export default function DanminPage() {
         { label: 'Completed', value: completedCount, color: '#22c55e' },
         { label: 'Cancelled', value: cancelledCount, color: '#ef4444' }
       ],
-      itemChartData
+      itemChartData,
+      preparationData
     };
   }, [todaysOrders]);
 
@@ -278,8 +357,8 @@ export default function DanminPage() {
             </div>
           </div>
 
-          {/* Pie Charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
               <h3 className="text-md font-bold text-gray-300 font-mono mb-4">TODAY'S ORDER STATUS BREAKDOWN</h3>
               <PieChart data={statistics.chartData} />
@@ -288,6 +367,11 @@ export default function DanminPage() {
             <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
               <h3 className="text-md font-bold text-gray-300 font-mono mb-4">TOP ITEMS SOLD TODAY</h3>
               <PieChart data={statistics.itemChartData} />
+            </div>
+
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
+              <h3 className="text-md font-bold text-gray-300 font-mono mb-4">ORDER PREPARATION TIMES</h3>
+              <BarChart data={statistics.preparationData} />
             </div>
           </div>
         </div>
