@@ -138,16 +138,56 @@ export default function DanminPage() {
     const completedCount = todaysOrders.filter(o => o.status === 'completed').length;
     const cancelledCount = todaysOrders.filter(o => o.status === 'cancelled').length;
 
-    // Calculate total value
-    const totalValue = todaysOrders.reduce((sum, order) => {
-      const orderTotal = order.items.reduce((itemSum, item) => {
-        return itemSum + (item.price || 0) * (item.quantity || 1);
-      }, 0);
-      return sum + orderTotal;
-    }, 0);
+    // Calculate total value and total items count
+    let totalValue = 0;
+    let totalItemsCount = 0;
+    const itemsMap = new Map();
+
+    todaysOrders.forEach(order => {
+      order.items.forEach(item => {
+        const quantity = item.quantity || 1;
+        totalItemsCount += quantity;
+        totalValue += (item.price || 0) * quantity;
+
+        // Count items by name
+        const itemName = item.name || 'Unknown';
+        const currentCount = itemsMap.get(itemName) || 0;
+        itemsMap.set(itemName, currentCount + quantity);
+      });
+    });
+
+    // Create item chart data - sort by count and take top 10
+    const itemsArray = Array.from(itemsMap.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+
+    // Generate colors for items (using a variety of colors)
+    const itemColors = [
+      '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981',
+      '#06b6d4', '#6366f1', '#f97316', '#14b8a6', '#a855f7',
+      '#ef4444', '#22c55e', '#eab308', '#6b7280', '#84cc16'
+    ];
+
+    const topItems = itemsArray.slice(0, 10);
+    const othersCount = itemsArray.slice(10).reduce((sum, item) => sum + item.count, 0);
+
+    const itemChartData = topItems.map((item, index) => ({
+      label: item.name,
+      value: item.count,
+      color: itemColors[index % itemColors.length]
+    }));
+
+    if (othersCount > 0) {
+      itemChartData.push({
+        label: 'Others',
+        value: othersCount,
+        color: '#6b7280'
+      });
+    }
 
     return {
       totalOrders: todaysOrders.length,
+      totalItemsCount,
       pendingCount,
       completedCount,
       cancelledCount,
@@ -156,7 +196,8 @@ export default function DanminPage() {
         { label: 'Pending', value: pendingCount, color: '#fb923c' },
         { label: 'Completed', value: completedCount, color: '#22c55e' },
         { label: 'Cancelled', value: cancelledCount, color: '#ef4444' }
-      ]
+      ],
+      itemChartData
     };
   }, [todaysOrders]);
 
@@ -202,6 +243,9 @@ export default function DanminPage() {
               <div className="text-3xl font-bold text-green-400 font-mono">
                 {statistics.totalOrders}
               </div>
+              <div className="text-gray-400 text-sm font-mono mt-1">
+                {statistics.totalItemsCount} items sold
+              </div>
               <div className="text-gray-500 text-xs font-mono mt-2">
                 <span className="text-orange-400">{statistics.pendingCount} pending</span>
                 {' • '}
@@ -234,10 +278,17 @@ export default function DanminPage() {
             </div>
           </div>
 
-          {/* Pie Chart */}
-          <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
-            <h3 className="text-md font-bold text-gray-300 font-mono mb-4">TODAY'S ORDER STATUS BREAKDOWN</h3>
-            <PieChart data={statistics.chartData} />
+          {/* Pie Charts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
+              <h3 className="text-md font-bold text-gray-300 font-mono mb-4">TODAY'S ORDER STATUS BREAKDOWN</h3>
+              <PieChart data={statistics.chartData} />
+            </div>
+
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
+              <h3 className="text-md font-bold text-gray-300 font-mono mb-4">TOP ITEMS SOLD TODAY</h3>
+              <PieChart data={statistics.itemChartData} />
+            </div>
           </div>
         </div>
 
