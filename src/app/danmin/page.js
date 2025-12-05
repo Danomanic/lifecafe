@@ -1,7 +1,71 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+
+// Simple Pie Chart Component
+function PieChart({ data }) {
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+
+  if (total === 0) {
+    return (
+      <div className="flex items-center justify-center h-48 text-gray-500 text-sm">
+        No data to display
+      </div>
+    );
+  }
+
+  let currentAngle = -90; // Start from top
+  const slices = data.map((item) => {
+    const percentage = (item.value / total) * 100;
+    const angle = (item.value / total) * 360;
+    const startAngle = currentAngle;
+    const endAngle = currentAngle + angle;
+    currentAngle = endAngle;
+
+    // Calculate path for pie slice
+    const startRad = (startAngle * Math.PI) / 180;
+    const endRad = (endAngle * Math.PI) / 180;
+    const x1 = 50 + 45 * Math.cos(startRad);
+    const y1 = 50 + 45 * Math.sin(startRad);
+    const x2 = 50 + 45 * Math.cos(endRad);
+    const y2 = 50 + 45 * Math.sin(endRad);
+    const largeArc = angle > 180 ? 1 : 0;
+
+    return {
+      ...item,
+      path: `M 50 50 L ${x1} ${y1} A 45 45 0 ${largeArc} 1 ${x2} ${y2} Z`,
+      percentage: percentage.toFixed(1)
+    };
+  });
+
+  return (
+    <div className="flex flex-col items-center">
+      <svg viewBox="0 0 100 100" className="w-48 h-48">
+        {slices.map((slice, index) => (
+          <g key={index}>
+            <path
+              d={slice.path}
+              fill={slice.color}
+              stroke="#1f2937"
+              strokeWidth="0.5"
+            />
+          </g>
+        ))}
+      </svg>
+      <div className="mt-4 space-y-1">
+        {slices.map((slice, index) => (
+          <div key={index} className="flex items-center gap-2 text-xs font-mono">
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: slice.color }}></div>
+            <span className="text-gray-300">
+              {slice.label}: {slice.value} ({slice.percentage}%)
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function DanminPage() {
   const [allOrders, setAllOrders] = useState([]);
@@ -55,6 +119,34 @@ export default function DanminPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Calculate statistics
+  const statistics = useMemo(() => {
+    const pendingCount = allOrders.filter(o => o.status === 'pending').length;
+    const completedCount = allOrders.filter(o => o.status === 'completed').length;
+    const cancelledCount = allOrders.filter(o => o.status === 'cancelled').length;
+
+    // Calculate total value
+    const totalValue = allOrders.reduce((sum, order) => {
+      const orderTotal = order.items.reduce((itemSum, item) => {
+        return itemSum + (item.price || 0) * (item.quantity || 1);
+      }, 0);
+      return sum + orderTotal;
+    }, 0);
+
+    return {
+      totalOrders: allOrders.length,
+      pendingCount,
+      completedCount,
+      cancelledCount,
+      totalValue,
+      chartData: [
+        { label: 'Pending', value: pendingCount, color: '#fb923c' },
+        { label: 'Completed', value: completedCount, color: '#22c55e' },
+        { label: 'Cancelled', value: cancelledCount, color: '#ef4444' }
+      ]
+    };
+  }, [allOrders]);
+
   if (initialLoading) {
     return (
       <div className="min-h-screen bg-gray-950 p-4">
@@ -86,6 +178,55 @@ export default function DanminPage() {
             ERROR: {error}
           </div>
         )}
+
+        {/* Statistics Section */}
+        <div className="mb-6">
+          <h2 className="text-lg font-bold text-gray-300 font-mono mb-3">STATISTICS</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            {/* Total Orders Card */}
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+              <div className="text-gray-400 text-xs font-mono mb-1">TOTAL ORDERS</div>
+              <div className="text-3xl font-bold text-green-400 font-mono">
+                {statistics.totalOrders}
+              </div>
+              <div className="text-gray-500 text-xs font-mono mt-2">
+                <span className="text-orange-400">{statistics.pendingCount} pending</span>
+                {' • '}
+                <span className="text-green-500">{statistics.completedCount} completed</span>
+                {' • '}
+                <span className="text-red-500">{statistics.cancelledCount} cancelled</span>
+              </div>
+            </div>
+
+            {/* Total Value Card */}
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+              <div className="text-gray-400 text-xs font-mono mb-1">TOTAL VALUE</div>
+              <div className="text-3xl font-bold text-green-400 font-mono">
+                £{statistics.totalValue.toFixed(2)}
+              </div>
+              <div className="text-gray-500 text-xs font-mono mt-2">
+                All orders combined
+              </div>
+            </div>
+
+            {/* Average Order Value Card */}
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+              <div className="text-gray-400 text-xs font-mono mb-1">AVG ORDER VALUE</div>
+              <div className="text-3xl font-bold text-green-400 font-mono">
+                £{statistics.totalOrders > 0 ? (statistics.totalValue / statistics.totalOrders).toFixed(2) : '0.00'}
+              </div>
+              <div className="text-gray-500 text-xs font-mono mt-2">
+                Per order
+              </div>
+            </div>
+          </div>
+
+          {/* Pie Chart */}
+          <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
+            <h3 className="text-md font-bold text-gray-300 font-mono mb-4">ORDER STATUS BREAKDOWN</h3>
+            <PieChart data={statistics.chartData} />
+          </div>
+        </div>
 
         {/* Orders Log */}
         <div className="mb-6">
