@@ -119,14 +119,27 @@ export default function DanminPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Calculate statistics
+  // Filter orders to only show today's orders
+  const todaysOrders = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return allOrders.filter(order => {
+      const orderDate = new Date(order.createdAt);
+      return orderDate >= today && orderDate < tomorrow;
+    });
+  }, [allOrders]);
+
+  // Calculate statistics for today's orders only
   const statistics = useMemo(() => {
-    const pendingCount = allOrders.filter(o => o.status === 'pending').length;
-    const completedCount = allOrders.filter(o => o.status === 'completed').length;
-    const cancelledCount = allOrders.filter(o => o.status === 'cancelled').length;
+    const pendingCount = todaysOrders.filter(o => o.status === 'pending').length;
+    const completedCount = todaysOrders.filter(o => o.status === 'completed').length;
+    const cancelledCount = todaysOrders.filter(o => o.status === 'cancelled').length;
 
     // Calculate total value
-    const totalValue = allOrders.reduce((sum, order) => {
+    const totalValue = todaysOrders.reduce((sum, order) => {
       const orderTotal = order.items.reduce((itemSum, item) => {
         return itemSum + (item.price || 0) * (item.quantity || 1);
       }, 0);
@@ -134,7 +147,7 @@ export default function DanminPage() {
     }, 0);
 
     return {
-      totalOrders: allOrders.length,
+      totalOrders: todaysOrders.length,
       pendingCount,
       completedCount,
       cancelledCount,
@@ -145,7 +158,7 @@ export default function DanminPage() {
         { label: 'Cancelled', value: cancelledCount, color: '#ef4444' }
       ]
     };
-  }, [allOrders]);
+  }, [todaysOrders]);
 
   if (initialLoading) {
     return (
@@ -181,11 +194,11 @@ export default function DanminPage() {
 
         {/* Statistics Section */}
         <div className="mb-6">
-          <h2 className="text-lg font-bold text-gray-300 font-mono mb-3">STATISTICS</h2>
+          <h2 className="text-lg font-bold text-gray-300 font-mono mb-3">TODAY'S STATISTICS</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             {/* Total Orders Card */}
             <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-              <div className="text-gray-400 text-xs font-mono mb-1">TOTAL ORDERS</div>
+              <div className="text-gray-400 text-xs font-mono mb-1">TOTAL ORDERS (TODAY)</div>
               <div className="text-3xl font-bold text-green-400 font-mono">
                 {statistics.totalOrders}
               </div>
@@ -200,30 +213,30 @@ export default function DanminPage() {
 
             {/* Total Value Card */}
             <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-              <div className="text-gray-400 text-xs font-mono mb-1">TOTAL VALUE</div>
+              <div className="text-gray-400 text-xs font-mono mb-1">TOTAL VALUE (TODAY)</div>
               <div className="text-3xl font-bold text-green-400 font-mono">
                 £{statistics.totalValue.toFixed(2)}
               </div>
               <div className="text-gray-500 text-xs font-mono mt-2">
-                All orders combined
+                Today's orders combined
               </div>
             </div>
 
             {/* Average Order Value Card */}
             <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-              <div className="text-gray-400 text-xs font-mono mb-1">AVG ORDER VALUE</div>
+              <div className="text-gray-400 text-xs font-mono mb-1">AVG ORDER VALUE (TODAY)</div>
               <div className="text-3xl font-bold text-green-400 font-mono">
                 £{statistics.totalOrders > 0 ? (statistics.totalValue / statistics.totalOrders).toFixed(2) : '0.00'}
               </div>
               <div className="text-gray-500 text-xs font-mono mt-2">
-                Per order
+                Per order today
               </div>
             </div>
           </div>
 
           {/* Pie Chart */}
           <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
-            <h3 className="text-md font-bold text-gray-300 font-mono mb-4">ORDER STATUS BREAKDOWN</h3>
+            <h3 className="text-md font-bold text-gray-300 font-mono mb-4">TODAY'S ORDER STATUS BREAKDOWN</h3>
             <PieChart data={statistics.chartData} />
           </div>
         </div>
@@ -232,7 +245,7 @@ export default function DanminPage() {
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-lg font-bold text-gray-300 font-mono">
-              ORDERS LOG [{allOrders.length} total]
+              TODAY'S ORDERS [{todaysOrders.length} total]
             </h2>
             <button
               onClick={() => fetchAllOrders(false)}
@@ -242,10 +255,10 @@ export default function DanminPage() {
             </button>
           </div>
           <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-xs overflow-x-auto border border-gray-700 max-h-[600px] overflow-y-auto">
-            {allOrders.length === 0 ? (
-              <div className="text-gray-500">No orders found.</div>
+            {todaysOrders.length === 0 ? (
+              <div className="text-gray-500">No orders found for today.</div>
             ) : (
-              allOrders.map((order) => {
+              todaysOrders.map((order) => {
                 // Get options - they're stored as objects in MongoDB
                 const renderOptions = (item) => {
                   let options = null;
