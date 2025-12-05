@@ -342,7 +342,7 @@
             "milk-temp": ["cold", "hot"]
           },
           "collapsibleOptions": {
-            "milk": "no milk",
+            "milk": "semi-skimmed",
             "milk-temp": "hot"
           }
         },
@@ -408,7 +408,7 @@
             "milk-temp": ["cold", "hot"]
           },
           "collapsibleOptions": {
-            "milk": "no milk",
+            "milk": "semi-skimmed",
             "milk-temp": "hot"
           }
         },
@@ -504,7 +504,7 @@
             "milk": ["no milk", "semi-skimmed", "skimmed", "oat", "almond", "soya"]
           },
           "collapsibleOptions": {
-            "milk": "no milk"
+            "milk": "semi-skimmed"
           }
         },
         {
@@ -525,7 +525,7 @@
             "lemon": ["no", "yes"]
           },
           "collapsibleOptions": {
-            "milk": "no milk",
+            "milk": "semi-skimmed",
             "lemon": "no"
           }
         }
@@ -571,10 +571,11 @@
           "name": "Water",
           "slug": "water",
           "options": {
-            "type": ["still", "sparkling"],
+            "type": ["tap", "still", "sparkling"],
             "extras": ["no", "ice", "lemon", "ice and lemon"]
           },
           "collapsibleOptions": {
+            "type": "tap",
             "extras": "no"
           },
           "price": 1.50
