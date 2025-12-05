@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Tesseract from 'tesseract.js';
@@ -15,8 +15,39 @@ export default function ScanOrderPage() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [tableNumber, setTableNumber] = useState('');
   const [error, setError] = useState(null);
+  const [isInitializing, setIsInitializing] = useState(true);
   const fileInputRef = useRef(null);
+  const workerRef = useRef(null);
   const router = useRouter();
+
+  // Initialize OCR worker on mount
+  useEffect(() => {
+    const initWorker = async () => {
+      try {
+        const worker = await Tesseract.createWorker('eng', 1, {
+          logger: (m) => {
+            if (m.status === 'loading tesseract core' || m.status === 'initializing tesseract') {
+              console.log('OCR Engine:', m.status);
+            }
+          }
+        });
+        workerRef.current = worker;
+        setIsInitializing(false);
+      } catch (err) {
+        console.error('Failed to initialize OCR worker:', err);
+        setIsInitializing(false);
+      }
+    };
+
+    initWorker();
+
+    // Cleanup worker on unmount
+    return () => {
+      if (workerRef.current) {
+        workerRef.current.terminate();
+      }
+    };
+  }, []);
 
   // Extract all menu items into a flat array for matching
   const getAllMenuItems = () => {
@@ -66,12 +97,39 @@ export default function ScanOrderPage() {
     return items;
   };
 
-  const handleImageUpload = (e) => {
+  // Resize image to improve OCR speed
+  const resizeImage = (dataUrl, maxWidth = 800) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Resize if image is larger than maxWidth
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.9));
+      };
+      img.src = dataUrl;
+    });
+  };
+
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result);
+      reader.onloadend = async () => {
+        // Resize image for faster processing
+        const resizedImage = await resizeImage(reader.result);
+        setImage(resizedImage);
         setError(null);
         setExtractedText('');
         setMatchedItems([]);
@@ -82,24 +140,23 @@ export default function ScanOrderPage() {
   };
 
   const processImage = async () => {
-    if (!image) return;
+    if (!image || !workerRef.current) {
+      setError('OCR engine not ready. Please wait a moment and try again.');
+      return;
+    }
 
     setIsProcessing(true);
     setOcrProgress(0);
     setError(null);
 
     try {
-      const result = await Tesseract.recognize(
-        image,
-        'eng',
-        {
-          logger: (m) => {
-            if (m.status === 'recognizing text') {
-              setOcrProgress(Math.round(m.progress * 100));
-            }
+      const result = await workerRef.current.recognize(image, {
+        logger: (m) => {
+          if (m.status === 'recognizing text') {
+            setOcrProgress(Math.round(m.progress * 100));
           }
         }
-      );
+      });
 
       const text = result.data.text;
       setExtractedText(text);
@@ -211,6 +268,13 @@ export default function ScanOrderPage() {
           </ol>
         </div>
 
+        {/* Initialization Status */}
+        {isInitializing && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <p className="text-yellow-800 text-sm">⏳ Initializing OCR engine... This may take a moment.</p>
+          </div>
+        )}
+
         {/* Image Upload */}
         {!showConfirmation && (
           <div className="bg-white rounded-lg shadow p-6 mb-4">
@@ -221,13 +285,15 @@ export default function ScanOrderPage() {
               capture="environment"
               onChange={handleImageUpload}
               className="hidden"
+              disabled={isInitializing}
             />
 
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors mb-4"
+              disabled={isInitializing}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors mb-4 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              📷 Upload/Take Photo
+              {isInitializing ? '⏳ Initializing OCR...' : '📷 Upload/Take Photo'}
             </button>
 
             {image && (
